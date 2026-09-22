@@ -8,10 +8,14 @@ documents, and is served at [docs.bounda.dev](https://docs.bounda.dev). This rep
 what answers "what is this and why", so anything about *how* belongs there.
 
 ```bash
-npm install
-npm run dev      # http://localhost:4321
-npm run build    # dist/
+pnpm install
+pnpm dev      # http://localhost:4321
+pnpm build    # dist/
 ```
+
+pnpm, like the framework repository, and not only for consistency: `npm ci` cannot install this
+tree on Linux from a lockfile resolved on macOS, because rolldown ships its native bindings as
+per-platform optional dependencies. The pnpm lockfile carries all of them.
 
 ## Keeping the two sites coherent
 
