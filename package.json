@@ -15,5 +15,10 @@
   },
   "devDependencies": {
     "@astrojs/sitemap": "^3.7.4"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }
