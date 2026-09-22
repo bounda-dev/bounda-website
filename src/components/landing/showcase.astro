@@ -11,68 +11,80 @@ const steps = [
     tagline: "Define the command",
     label: "Command",
     illustration: "command",
-    code: `// domain/order/commands/place-order.ts
-  
-export async function handler({ command, events }: Command.HandlerArgs) {
-  const { aggregateId, customerId, items } = command.payload;
-  const total = items.reduce((s, i) => s + i.quantity * i.price, 0);
-  
-  return events.orderPlaced({aggregateId, customerId, items, total});
-}`,
+    code: `// app/domain/order/commands/place-order.ts
+import { DomainError } from "@bounda-dev/core";
+import type { Command } from "./+types/place-order";
+
+export const payload = ({ z }: Command.PayloadArgs) =>
+  z.object({
+    orderId: z.uuid(),
+    customerId: z.string().min(1),
+    items: z.array(z.object({ productId: z.string(), quantity: z.int().positive(), price: z.number().positive() })).min(1),
+  });
+
+export const handler = ({ command, state, events }: Command.HandlerArgs) => {
+  if (state.status !== undefined) {
+    throw new DomainError(\`Order \${command.aggregateId} was already placed\`);
+  }
+  const { customerId, items } = command.payload;
+  const total = items.reduce((sum, item) => sum + item.quantity * item.price, 0);
+  return [events.orderPlaced({ customerId, items, total })];
+};`,
   },
   {
     num: "02",
     tagline: "Define the event",
     label: "Event",
     illustration: "event-sourcing",
-    code: `// domain/order/order-placed.ts
+    code: `// app/domain/order/order-placed.ts
+import type { Event } from "./+types/order-placed";
 
-export const payload: Event.PayloadFunction = ({ z }) => {
-  return z.object({
+export const payload = ({ z }: Event.PayloadArgs) =>
+  z.object({
     customerId: z.string(),
-    items: z.array(z.object({
-      productId: z.string(),
-      quantity: z.number(),
-      price: z.number(),
-    })),
+    items: z.array(z.object({ productId: z.string(), quantity: z.int().positive(), price: z.number().positive() })),
     total: z.number().positive(),
   });
-};
 
-export function apply({ state, event }: Event.ApplierArgs) {
-  return { ...state, ...event.payload, status: "placed", placedAt: event.timestamp };
-}`,
+export const apply = ({ state, event }: Event.ApplyArgs) => ({
+  ...state,
+  status: "placed" as const,
+  customerId: event.payload.customerId,
+  items: event.payload.items,
+  total: event.payload.total,
+  placedAt: event.timestamp,
+});`,
   },
   {
     num: "03",
     tagline: "Project the read model",
     label: "Projection",
     illustration: "projection",
-    code: `// read/my-orders/projections/order-placed.ts
+    code: `// app/read/my-orders/projections/order-placed.ts
+import type { Projection } from "./+types/order-placed";
 
-export function project({ event, projector }: Projection.HandlerArgs) {
-  projector.insert({
-    id: event.aggregateId,
+export const project = async ({ event, table }: Projection.Args) => {
+  await table.insert({
+    orderId: event.aggregateId,
     customerId: event.payload.customerId,
     status: "placed",
     total: event.payload.total,
-    placedAt: event.timestamp,
   });
-}`,
+};`,
   },
   {
     num: "04",
     tagline: "Define the view",
     label: "View",
     illustration: "view-query",
-    code: `// read/my-orders/views/view.ts
+    code: `// app/read/my-orders/view.ts
+import type { View } from "./+types/view";
 
-export const fields: View.FieldsFunction = () => ({
-  id: { type: "string", primaryKey: true },
-  customerId: { type: "string", index: true },
-  status: { type: "string", index: true },
-  total: { type: "number", required: true },
-  placedAt: { type: "string", required: true },
+export const fields = ({ f }: View.FieldsArgs) => ({
+  orderId: f.string().primaryKey(),
+  customerId: f.string().index(),
+  status: f.string(),
+  total: f.number(),
 });`,
   },
   {
@@ -80,21 +92,15 @@ export const fields: View.FieldsFunction = () => ({
     tagline: "Query the result",
     label: "Query",
     illustration: "view-query",
-    code: `// read/my-orders/queries/get-order.ts
+    code: `// app/read/my-orders/queries/get-my-orders.ts
+import type { Query } from "./+types/get-my-orders";
 
-export const payload: Query.PayloadFunction = ({ z }) => {
-  return z.object({ orderId: z.string().uuid() });
-};
+export const payload = ({ z }: Query.PayloadArgs) => z.object({ customerId: z.string().min(1) });
 
-export const repository: Query.Repository = ({ orderId, client }) => {
-  return client.prepare("SELECT * FROM order_summary WHERE id = ?").get(orderId) ?? null;
-};
+export const repository = ({ table, customerId }: Query.RepositoryArgs) =>
+  table.findMany({ where: { customerId }, orderBy: { field: "total", direction: "desc" } });
 
-export async function handler({ repositoryData }: Query.HandlerArgs) {
-  if (!repositoryData) return null;
-  
-  return { ...repositoryData, items: JSON.parse(repositoryData.items) };
-}`,
+export const handler = ({ repositoryData }: Query.HandlerArgs) => repositoryData;`,
   },
 ];
 
