@@ -1,0 +1,23 @@
+---
+import Footer from "../components/footer.astro";
+import BgShapes from "../components/landing/bg-shapes.astro";
+import Cta from "../components/landing/cta.astro";
+import Hero from "../components/landing/hero.astro";
+import Nav from "../components/landing/nav.astro";
+import Showcase from "../components/landing/showcase.astro";
+import Why from "../components/landing/why.astro";
+import BaseLayout from "../layouts/base.astro";
+---
+
+<BaseLayout>
+  <BgShapes />
+  <Nav />
+  <main id="main-content">
+    <Hero />
+    <Why />
+    <Showcase />
+    <Cta />
+  </main>
+  <Footer />
+  <script src="../scripts/animations.js"></script>
+</BaseLayout>

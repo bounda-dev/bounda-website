@@ -1,0 +1,140 @@
+---
+---
+
+<canvas id="bg-shapes" aria-hidden="true"></canvas>
+
+<style>
+  #bg-shapes {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+  }
+</style>
+
+<script>
+  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const canvas = document.getElementById("bg-shapes");
+    const ctx = canvas.getContext("2d");
+
+    let W = 0, H = 0;
+
+    function resize() {
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener("resize", resize, { passive: true });
+
+    const COLORS = [
+      [99, 102, 241],   // indigo
+      [59, 130, 246],   // blue
+      [139, 92, 246],   // purple
+    ];
+    const IS_MOBILE = window.innerWidth < 768;
+    const COUNT       = IS_MOBILE ? 30 : 65;
+    const MAX_DIST    = IS_MOBILE ? 90 : 120;
+    const MAX_DIST_SQ = MAX_DIST * MAX_DIST;
+    const TYPES    = ["circle", "circle", "circle", "diamond"]; // 75 % circles
+
+    let isLight = document.documentElement.getAttribute("data-theme") === "light";
+
+    // Watch for theme changes
+    new MutationObserver(() => {
+      isLight = document.documentElement.getAttribute("data-theme") === "light";
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+    function makeParticle() {
+      return {
+        x:       Math.random() * W,
+        y:       Math.random() * H,
+        vx:      (Math.random() - 0.5) * 0.35,
+        vy:      (Math.random() - 0.5) * 0.35,
+        r:       1.4 + Math.random() * 1.4,
+        type:    TYPES[Math.floor(Math.random() * TYPES.length)],
+        color:   COLORS[Math.floor(Math.random() * COLORS.length)],
+        opacity: 0.25 + Math.random() * 0.45,
+      };
+    }
+
+    const particles = Array.from({ length: COUNT }, makeParticle);
+
+    function drawParticle(p) {
+      const [r, g, b] = p.color;
+      const opacity = isLight ? Math.min(1, p.opacity + 0.15) : p.opacity;
+      ctx.fillStyle = `rgba(${r},${g},${b},${opacity})`;
+
+      if (p.type === "circle") {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        // diamond
+        const s = p.r * 2;
+        ctx.beginPath();
+        ctx.moveTo(p.x,     p.y - s);
+        ctx.lineTo(p.x + s, p.y);
+        ctx.lineTo(p.x,     p.y + s);
+        ctx.lineTo(p.x - s, p.y);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+
+    let active = true;
+    let offscreen = false;
+
+    window.addEventListener("scroll", () => {
+      offscreen = window.scrollY > window.innerHeight * 1.5;
+    }, { passive: true });
+
+    function tick() {
+      if (!active) return;
+      if (offscreen) { requestAnimationFrame(tick); return; }
+      ctx.clearRect(0, 0, W, H);
+
+      // Move + wrap
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < -12) p.x = W + 12;
+        else if (p.x > W + 12) p.x = -12;
+        if (p.y < -12) p.y = H + 12;
+        else if (p.y > H + 12) p.y = -12;
+      }
+
+      // Connections
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx    = particles[i].x - particles[j].x;
+          const dy    = particles[i].y - particles[j].y;
+          const distSq = dx * dx + dy * dy;
+          if (distSq < MAX_DIST_SQ) {
+            const dist = Math.sqrt(distSq);
+            const alpha = (1 - dist / MAX_DIST) * (isLight ? 0.35 : 0.14);
+            ctx.strokeStyle = `rgba(99,102,241,${alpha})`;
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Particles on top of lines
+      for (const p of particles) drawParticle(p);
+
+      requestAnimationFrame(tick);
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      active = !document.hidden;
+      if (active) requestAnimationFrame(tick);
+    });
+
+    requestAnimationFrame(tick);
+  }
+</script>

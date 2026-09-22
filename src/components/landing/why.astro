@@ -1,0 +1,243 @@
+---
+---
+
+<section class="l-why frontal-entry reveal">
+  <div class="container l-why-inner">
+    <!-- The "box" the cylinder bounces inside — spans full grid width -->
+    <div class="l-why-geo" aria-hidden="true">
+      <svg id="why-cylinder" class="geo-cylinder" viewBox="0 0 200 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="cylBody" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stop-color="rgba(99,102,241,0.08)" />
+              <stop offset="30%"  stop-color="rgba(99,102,241,0.22)" />
+              <stop offset="70%"  stop-color="rgba(59,130,246,0.18)" />
+              <stop offset="100%" stop-color="rgba(59,130,246,0.06)" />
+            </linearGradient>
+            <linearGradient id="cylTop" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stop-color="rgba(139,92,246,0.15)" />
+              <stop offset="50%"  stop-color="rgba(139,92,246,0.45)" />
+              <stop offset="100%" stop-color="rgba(139,92,246,0.1)" />
+            </linearGradient>
+            <linearGradient id="cylRing" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stop-color="rgba(99,102,241,0)" />
+              <stop offset="50%"  stop-color="rgba(99,102,241,0.3)" />
+              <stop offset="100%" stop-color="rgba(99,102,241,0)" />
+            </linearGradient>
+            <linearGradient id="cylHighlight" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%"   stop-color="rgba(255,255,255,0.18)" />
+              <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+            </linearGradient>
+          </defs>
+          <rect x="20" y="52" width="160" height="218" fill="url(#cylBody)" />
+          <ellipse cx="100" cy="52"  rx="80" ry="16" fill="none" stroke="url(#cylRing)" stroke-width="1" />
+          <ellipse cx="100" cy="106" rx="80" ry="16" fill="none" stroke="url(#cylRing)" stroke-width="0.75" opacity="0.6" />
+          <ellipse cx="100" cy="160" rx="80" ry="16" fill="none" stroke="url(#cylRing)" stroke-width="0.75" opacity="0.45" />
+          <ellipse cx="100" cy="214" rx="80" ry="16" fill="none" stroke="url(#cylRing)" stroke-width="0.75" opacity="0.3" />
+          <ellipse cx="100" cy="270" rx="80" ry="16" fill="rgba(59,130,246,0.08)" stroke="url(#cylRing)" stroke-width="1" />
+          <ellipse cx="100" cy="52"  rx="80" ry="16" fill="url(#cylTop)" />
+          <line x1="20" y1="52" x2="20" y2="270" stroke="rgba(99,102,241,0.2)" stroke-width="1" />
+          <line x1="180" y1="52" x2="180" y2="270" stroke="rgba(59,130,246,0.12)" stroke-width="1" />
+          <rect x="28" y="52" width="18" height="218" fill="url(#cylHighlight)" rx="2" />
+      </svg>
+    </div>
+
+    <div class="l-why-left">
+      <div class="l-why-header reveal">
+        <p class="section-label">Why Bounda</p>
+        <h2 class="gradient-text">Your events.<br />Your logic.<br />Zero boilerplate.</h2>
+      </div>
+    </div>
+
+    <div class="l-why-body reveal">
+      <p>
+        <strong>The setup is on us.</strong> Traditional implementations bury your domain
+        under layers of infrastructure: command buses, aggregate repositories, event dispatchers,
+        projection runners. Bounda handles all of that wiring. You write only what matters —
+        handlers, appliers, and projections — the runtime connects them.
+      </p>
+      <p>
+        <strong>Types inferred, never written.</strong> Bounda derives TypeScript types directly
+        from your Zod schemas — no manual interfaces, no duplication. Every function signature
+        is fully typed and autocompleted in your editor the moment you define the schema.
+        Change a field and the compiler tells you every place that breaks — across commands,
+        events, projections, and queries — before you ship.
+      </p>
+      <p>
+        <strong>Sagas are first-class citizens.</strong> Multi-step business workflows,
+        retries, timeouts, and compensations belong in dedicated sagas and policies —
+        not in ad-hoc state machines buried inside handlers. Bounda gives them a home and a lifecycle.
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .l-why {
+    padding-block: var(--section-gap);
+  }
+
+  .l-why-inner {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    position: relative;
+  }
+
+  @media (min-width: 768px) {
+    .l-why-inner {
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: start;
+    }
+
+    .l-why-left {
+      min-height: 420px;
+    }
+  }
+
+  /* ── Geo — left column + a sliver of the gap ──────────────── */
+  .l-why-geo {
+    position: absolute;
+    left: 0;
+    top: -180px;        /* bleeds above the section header */
+    bottom: -140px;     /* bleeds below the paragraphs, no layout impact */
+    width: 100%;        /* mobile: full single column */
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @media (min-width: 768px) {
+    .l-why-geo {
+      width: 68%;       /* desktop: left column + well into the paragraph area */
+    }
+  }
+
+  /* ── Left column ──────────────────────────────────────────── */
+  .l-why-left {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .l-why-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .geo-cylinder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: auto;
+    filter: drop-shadow(0 0 40px rgba(99, 102, 241, 0.2));
+    opacity: 0.25;
+    will-change: transform;
+  }
+
+  @media (max-width: 767px) {
+    .geo-cylinder {
+      width: 120px;
+    }
+  }
+
+  /* ── Right column ─────────────────────────────────────────── */
+  .l-why-body {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding-top: 0.25rem;
+  }
+
+  .l-why-body p {
+    font-size: clamp(0.9rem, 1.2vw, 1rem);
+    line-height: 1.8;
+    color: var(--fg-muted);
+  }
+
+  .l-why-body strong {
+    color: var(--fg);
+    font-weight: 600;
+  }
+
+  .l-why-body code {
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: 0.82em;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+  }
+</style>
+
+<script>
+  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const cyl = document.getElementById("why-cylinder");
+    const box = cyl?.closest(".l-why-geo");
+
+    if (cyl && box) {
+      // Match CSS width; height from viewBox aspect ratio (200×320 → 260×416)
+      const CYL_W = window.innerWidth < 768 ? 120 : 260;
+      const CYL_H = CYL_W * 1.6;
+      const hw = CYL_W / 2;
+      const hh = CYL_H / 2;
+
+      let cx = 0, cy = 0;
+      let vx = 1.3, vy = -0.9;
+      let angle = 0;
+      let started = false;
+      let cylActive = false;
+
+      const cylObserver = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          cylActive = entry.isIntersecting;
+          if (cylActive) {
+            cyl.style.willChange = "transform";
+            requestAnimationFrame(tick);
+          } else {
+            cyl.style.willChange = "auto";
+          }
+        }
+      }, { threshold: 0 });
+      cylObserver.observe(box);
+
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden && cylActive) requestAnimationFrame(tick);
+      });
+
+      function tick() {
+        if (!cylActive || document.hidden) return;
+
+        const bw = box.clientWidth;
+        const bh = box.clientHeight;
+
+        if (bw === 0 || bh === 0) { requestAnimationFrame(tick); return; }
+
+        if (!started) {
+          cx = bw / 2;
+          cy = bh * 0.55;
+          started = true;
+        }
+
+        cx += vx;
+        cy += vy;
+        angle += 0.8;
+
+        // Larger horizontal margin so the cylinder stays clear of the left/right clip edges
+        const Mx = 56, My = 24;
+        if (cx + hw >= bw - Mx) { cx = bw - hw - Mx; vx = -Math.abs(vx); }
+        else if (cx - hw <= Mx) { cx = hw + Mx;       vx = Math.abs(vx);  }
+        if (cy + hh >= bh - My) { cy = bh - hh - My; vy = -Math.abs(vy); }
+        else if (cy - hh <= My) { cy = hh + My;       vy = Math.abs(vy);  }
+
+        cyl.style.transform = `translate(${cx - hw}px, ${cy - hh}px) rotate(${angle}deg)`;
+        requestAnimationFrame(tick);
+      }
+    }
+  }
+</script>

@@ -1,0 +1,257 @@
+---
+---
+
+<div class="il-vq" aria-hidden="true">
+  <div class="vq-title">Read</div>
+
+  <!-- Table with integrated values -->
+  <div class="vq-table">
+    <div class="tbl-row tr1">
+      <span class="tbl-field">id</span>
+      <span class="tbl-val">"abc-123"</span>
+      <span class="tbl-badge bdg-pk">PK</span>
+    </div>
+    <div class="tbl-row tr2">
+      <span class="tbl-field">customerId</span>
+      <span class="tbl-val tbl-dim">"usr-7"</span>
+      <span class="tbl-badge bdg-idx">↗</span>
+    </div>
+    <div class="tbl-row tr3">
+      <span class="tbl-field">status</span>
+      <span class="tbl-val">"placed"</span>
+      <span class="tbl-badge bdg-idx">↗</span>
+    </div>
+    <div class="tbl-row tr4">
+      <span class="tbl-field">total</span>
+      <span class="tbl-val tbl-num">42</span>
+    </div>
+    <div class="tbl-row tr5">
+      <span class="tbl-field">placedAt</span>
+      <span class="tbl-val tbl-dim">"2024-..."</span>
+    </div>
+  </div>
+
+  <!-- Connector: dot travels upward -->
+  <div class="vq-connector">
+    <div class="vq-line"></div>
+    <div class="vq-travel"></div>
+  </div>
+
+  <!-- GetOrder at the bottom -->
+  <div class="vq-block vq-trigger">
+    <span class="vq-dot"></span>
+    <span class="vq-text">GetOrder</span>
+  </div>
+</div>
+
+<style>
+  .il-vq {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    padding: 0.15rem 0 0.5rem;
+    font-family: "SF Mono", "Fira Code", monospace;
+  }
+
+  .vq-title {
+    font-size: 0.62rem;
+    color: rgba(161, 161, 170, 0.5);
+    text-align: center;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.45rem;
+  }
+
+  /* ── Table ──────────────────────────────────── */
+  .vq-table {
+    display: flex;
+    flex-direction: column;
+    gap: 0.18rem;
+    width: 100%;
+  }
+
+  .tbl-row {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.45rem;
+    border-radius: 3px;
+    background: rgba(15, 23, 42, 0.35);
+    border: 1px solid rgba(51, 65, 85, 0.35);
+    opacity: 0;
+  }
+
+  .tbl-field {
+    font-size: 0.6rem;
+    color: rgba(226, 232, 240, 0.65);
+    flex-shrink: 0;
+    min-width: 4rem;
+  }
+
+  .tbl-val {
+    font-size: 0.6rem;
+    color: rgba(134, 239, 172, 0.82);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tbl-dim  { color: rgba(148, 163, 184, 0.4); }
+  .tbl-num  { color: rgba(251, 191, 36, 0.8); }
+
+  .tbl-badge {
+    font-size: 0.55rem;
+    padding: 0.05rem 0.26rem;
+    border-radius: 2px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .bdg-pk {
+    background: rgba(59, 130, 246, 0.14);
+    border: 1px solid rgba(59, 130, 246, 0.24);
+    color: rgba(147, 197, 253, 0.9);
+  }
+
+  .bdg-idx {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    color: rgba(134, 239, 172, 0.85);
+  }
+
+  /* rows appear bottom-to-top after dot arrives */
+  .tr5 { animation: rowIn 5s ease-in-out 1.4s  infinite; }
+  .tr4 { animation: rowIn 5s ease-in-out 1.56s infinite; }
+  .tr3 { animation: rowIn 5s ease-in-out 1.72s infinite; }
+  .tr2 { animation: rowIn 5s ease-in-out 1.88s infinite; }
+  .tr1 { animation: rowIn 5s ease-in-out 2.04s infinite; }
+
+  /* ── Connector ──────────────────────────────── */
+  .vq-connector {
+    position: relative;
+    width: 2px;
+    height: 22px;
+    flex-shrink: 0;
+  }
+
+  .vq-line {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to top, rgba(59, 130, 246, 0.25), rgba(139, 92, 246, 0.2));
+  }
+
+  .vq-travel {
+    position: absolute;
+    bottom: -3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    animation: dotUp 5s ease-in-out 0.2s infinite;
+  }
+
+  /* ── GetOrder trigger ───────────────────────── */
+  .vq-block {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.38rem 0.75rem;
+    border-radius: 5px;
+    width: 100%;
+  }
+
+  .vq-trigger {
+    background: rgba(59, 130, 246, 0.07);
+    border: 1px solid rgba(59, 130, 246, 0.18);
+    animation: triggerPulse 5s ease-in-out infinite;
+  }
+
+  .vq-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(59, 130, 246, 0.8);
+    box-shadow: 0 0 6px rgba(59, 130, 246, 0.5);
+    flex-shrink: 0;
+  }
+
+  .vq-text {
+    font-size: 0.65rem;
+    color: rgba(147, 197, 253, 0.85);
+    white-space: nowrap;
+  }
+
+  /* ── Keyframes ──────────────────────────────── */
+  @keyframes triggerPulse {
+    0%, 100% { box-shadow: none; }
+    4%, 16%  { box-shadow: 0 0 10px rgba(59, 130, 246, 0.18); }
+  }
+
+  @keyframes dotUp {
+    0%        { bottom: -3px; opacity: 0; background: rgba(59, 130, 246, 0.9); box-shadow: 0 0 8px rgba(59, 130, 246, 0.6); }
+    8%        { opacity: 1; }
+    78%       { bottom: calc(100% + 3px); opacity: 0; background: rgba(139, 92, 246, 0.9); box-shadow: 0 0 8px rgba(139, 92, 246, 0.6); }
+    100%      { bottom: calc(100% + 3px); opacity: 0; }
+  }
+
+  @keyframes rowIn {
+    0%        { opacity: 0; transform: translateX(-3px); }
+    10%, 72%  { opacity: 1; transform: translateX(0); }
+    90%, 100% { opacity: 0; transform: translateX(0); }
+  }
+
+  /* ── Light mode overrides ────────────────────────────────── */
+  :global([data-theme="light"]) .vq-title {
+    color: rgb(100, 116, 139);
+  }
+
+  :global([data-theme="light"]) .tbl-row {
+    background: rgb(226, 232, 240);   /* slate-200 */
+    border-color: rgb(148, 163, 184); /* slate-400 */
+  }
+
+  :global([data-theme="light"]) .tbl-field {
+    color: rgb(51, 65, 85);           /* slate-700 */
+  }
+
+  :global([data-theme="light"]) .tbl-val {
+    color: rgb(21, 128, 61);          /* green-700 */
+  }
+
+  :global([data-theme="light"]) .tbl-dim {
+    color: rgb(100, 116, 139);        /* slate-500 */
+  }
+
+  :global([data-theme="light"]) .tbl-num {
+    color: rgb(180, 83, 9);           /* amber-700 */
+  }
+
+  :global([data-theme="light"]) .bdg-pk {
+    background: rgb(219, 234, 254);   /* blue-100 */
+    border-color: rgb(147, 197, 253); /* blue-300 */
+    color: rgb(29, 78, 216);          /* blue-700 */
+  }
+
+  :global([data-theme="light"]) .bdg-idx {
+    background: rgb(220, 252, 231);   /* green-100 */
+    border-color: rgb(134, 239, 172); /* green-300 */
+    color: rgb(21, 128, 61);          /* green-700 */
+  }
+
+  :global([data-theme="light"]) .vq-trigger {
+    background: rgb(219, 234, 254);   /* blue-100 */
+    border-color: rgb(147, 197, 253); /* blue-300 */
+  }
+
+  :global([data-theme="light"]) .vq-text {
+    color: rgb(29, 78, 216);          /* blue-700 */
+  }
+
+  :global([data-theme="light"]) .vq-line {
+    background: linear-gradient(to top, rgb(147, 197, 253), rgb(196, 181, 253));
+  }
+</style>

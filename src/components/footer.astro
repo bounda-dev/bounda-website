@@ -1,0 +1,115 @@
+---
+---
+
+<footer class="site-footer">
+  <div class="container site-footer-inner">
+    <div class="site-footer-left">
+      <a href="/" aria-label="Bounda home" class="site-footer-logo">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="33 7 35 65"
+          height="20"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <line x1="63" y1="7" x2="63" y2="72" stroke="currentColor" stroke-width="10"></line>
+          <line x1="33" y1="61" x2="63" y2="61" stroke="currentColor" stroke-width="6"></line>
+        </svg>
+      </a>
+      <span class="site-footer-sep">&middot;</span>
+      <span class="site-footer-copy">Bounda</span>
+      <span class="site-footer-sep">&middot;</span>
+      <span class="site-footer-copy">&copy; {new Date().getFullYear()}</span>
+    </div>
+    <div class="site-footer-links">
+      <a href="https://github.com/bounda-dev/bounda" target="_blank" rel="noopener">GitHub</a>
+      <span class="site-footer-sep">&middot;</span>
+      <a href="https://docs.bounda.dev/getting-started/">Documentation</a>
+      <span class="site-footer-sep">&middot;</span>
+      <span>MIT License</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--border);
+    padding-block: 1.5rem;
+  }
+
+  .site-footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .site-footer-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .site-footer-logo {
+    color: var(--fg-muted);
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+  }
+
+  .site-footer-logo:hover { color: var(--fg); }
+
+  .site-footer-copy {
+    font-size: 0.85rem;
+    color: var(--fg-muted);
+  }
+
+  .site-footer-links {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--fg-muted);
+    font-size: 0.85rem;
+  }
+
+  .site-footer-links a {
+    transition: color 0.2s;
+  }
+
+  .site-footer-links a:hover {
+    color: var(--fg);
+  }
+
+  .site-footer-sep {
+    opacity: 0.4;
+    color: var(--fg-muted);
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 639px) {
+    .site-footer-links {
+      display: none;
+    }
+
+    .site-footer-inner {
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    .site-footer-left {
+      width: 100%;
+      align-items: center;
+    }
+
+    .site-footer-left .site-footer-copy:last-child {
+      margin-left: auto;
+    }
+
+    .site-footer-logo {
+      display: flex;
+      align-items: center;
+      line-height: 1;
+    }
+  }
+</style>

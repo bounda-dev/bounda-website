@@ -1,0 +1,49 @@
+---
+import BgShapes from "../components/landing/bg-shapes.astro";
+import BaseLayout from "../layouts/base.astro";
+---
+
+<BaseLayout title="Page Not Found — Bounda" description="The page you're looking for doesn't exist.">
+  <BgShapes />
+  <main class="not-found">
+    <h1 class="not-found-code">404</h1>
+    <p class="not-found-message">This page doesn't exist.</p>
+    <div class="not-found-links">
+      <a href="/" class="btn-ghost">Home</a>
+      <a href="https://docs.bounda.dev/getting-started/" class="btn-primary">Documentation</a>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .not-found {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    padding: 2rem;
+    gap: 1rem;
+  }
+
+  .not-found-code {
+    font-size: clamp(4rem, 12vw, 8rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    color: var(--fg-muted);
+    opacity: 0.3;
+  }
+
+  .not-found-message {
+    font-size: 1.1rem;
+    color: var(--fg-muted);
+  }
+
+  .not-found-links {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+</style>
