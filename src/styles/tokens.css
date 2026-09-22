@@ -1,0 +1,26 @@
+/* The palette this site and the documentation share. The documentation mirrors these values
+   in docs/src/styles/bounda.css of bounda-dev/bounda, mapped onto Starlight's own variables,
+   so a change here belongs there too. */
+
+:root,
+[data-theme="dark"] {
+  --bg: #09090b;
+  --fg: #fafafa;
+  --fg-muted: #a1a1aa;
+  --surface: #18181b;
+  --border: #27272a;
+  --accent: #3b82f6;
+  --radius: 8px;
+  --container: 1280px;
+  --section-gap: clamp(2.5rem, 5vw, 4rem);
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-theme="light"] {
+  --bg: #fafafa;
+  --fg: #09090b;
+  --fg-muted: #52525b;
+  --surface: #ffffff;
+  --border: #e4e4e7;
+  --accent: #3b82f6;
+}
