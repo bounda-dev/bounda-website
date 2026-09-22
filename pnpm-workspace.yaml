@@ -1,3 +1,12 @@
+packages:
+  - .
+
+# allowBuilds is pnpm 12; onlyBuiltDependencies is how pnpm 10 spells it, and Cloudflare's
+# build image ships pnpm 10.
 allowBuilds:
   esbuild: true
   workerd: true
+
+onlyBuiltDependencies:
+  - esbuild
+  - workerd
