@@ -24,6 +24,14 @@ interface Scene {
   readonly still: () => void;
 }
 
+const webgl2 = (): boolean => {
+  const probe = document.createElement("canvas").getContext("webgl2");
+  probe?.getExtension("WEBGL_lose_context")?.loseContext();
+  return probe !== null;
+};
+// The scene is the heaviest part of the page, so its fetch starts before anything else here.
+const loading = webgl2() ? import("./scene") : null;
+
 const root = document.documentElement;
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const byId = <T extends HTMLElement>(id: string): T => {
@@ -258,26 +266,23 @@ const frame = (now: number): void => {
 };
 
 // ---- The scene ----
-const webgl2 = (): boolean => {
-  const probe = document.createElement("canvas").getContext("webgl2");
-  probe?.getExtension("WEBGL_lose_context")?.loseContext();
-  return probe !== null;
-};
 const showDrawing = (): void => root.classList.add("no-webgl");
 
-if (webgl2()) {
+if (loading) {
   // On a slow connection the drawing stands in until the scene is ready, then cross-fades to it.
   const late = setTimeout(showDrawing, 2500);
-  import("./scene")
-    .then(({ startScene }) => {
+  loading
+    .then(({ startScene }) => startScene({ canvas, callouts, stage }))
+    .then((controls) => {
       clearTimeout(late);
-      scene = startScene({ canvas, callouts, stage });
+      scene = controls;
       if (reduced) {
-        scene.still();
+        controls.still();
         const redraw = (): void => scene?.still();
         addEventListener("resize", redraw);
         onThemeChange(redraw);
-      }
+      } else controls.frame();
+      // The canvas fades in only once its first frame is drawn, so the object never appears half-built.
       root.classList.remove("no-webgl");
       root.classList.add("webgl");
     })

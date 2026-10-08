@@ -258,7 +258,11 @@ const buildStudio = (pmrem: THREE.PMREMGenerator, light: boolean): THREE.Texture
   return pmrem.fromScene(s, 0.02).texture;
 };
 
-export const startScene = ({ canvas, callouts, stage }: SceneArgs): SceneControls => {
+export const startScene = async ({
+  canvas,
+  callouts,
+  stage,
+}: SceneArgs): Promise<SceneControls> => {
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: true,
@@ -281,12 +285,14 @@ export const startScene = ({ canvas, callouts, stage }: SceneArgs): SceneControl
   scene.fog = fog;
   const camera = new THREE.PerspectiveCamera(30, 1, 0.05, 200);
 
+  // Each mode's studio is built the first time that mode is shown.
   const pmrem = new THREE.PMREMGenerator(renderer);
-  const studios: Readonly<Record<Theme, THREE.Texture>> = {
-    dark: buildStudio(pmrem, false),
-    light: buildStudio(pmrem, true),
+  const studios: Partial<Record<Theme, THREE.Texture>> = {};
+  const studio = (theme: Theme): THREE.Texture => {
+    const built = studios[theme] ?? buildStudio(pmrem, theme === "light");
+    studios[theme] = built;
+    return built;
   };
-  pmrem.dispose();
 
   const key = new THREE.SpotLight(look.keyColor, look.key, 0, 0.44, 0.8, 2);
   key.position.set(-5.5, 9.5, 6.5);
@@ -864,7 +870,7 @@ export const startScene = ({ canvas, callouts, stage }: SceneArgs): SceneControl
     U.accent.value.copy(accent);
     U.trail.value = look.trail;
     renderer.toneMappingExposure = look.exposure;
-    scene.environment = studios[theme];
+    scene.environment = studio(theme);
     fog.color.setHex(look.fog);
     key.color.setHex(look.keyColor);
     readingLight.color.copy(accent);
@@ -1405,6 +1411,18 @@ export const startScene = ({ canvas, callouts, stage }: SceneArgs): SceneControl
     applyCamera();
     renderer.render(scene, camera);
   };
+
+  // Compile every program before the first frame, hidden objects included, so the scene neither
+  // stalls on its first frame nor stutters the first time the command or a trace appears.
+  // The first update sets each object's visibility back.
+  scene.traverse((object) => {
+    object.visible = true;
+  });
+  pose(0);
+  applyCamera();
+  // Without parallel compilation (a software renderer, some browsers) compileAsync only warns and blocks anyway.
+  if (renderer.extensions.has("KHR_parallel_shader_compile")) await renderer.compileAsync(scene, camera);
+  else renderer.compile(scene, camera);
 
   return { frame, still };
 };
