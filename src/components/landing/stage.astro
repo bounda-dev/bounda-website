@@ -28,6 +28,21 @@ for (let r = 0; r < 7; r++) {
 const round = (n: number): string => n.toFixed(1);
 ---
 
+<!-- Before first paint: hold the hero back for the intro (src/scripts/landing/intro.ts), once per session
+     and never with reduced motion. If the page's script does not run, the hero shows anyway. -->
+<script is:inline>
+  (function () {
+    var root = document.documentElement;
+    try {
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches || sessionStorage.getItem("bounda-intro")) return;
+    } catch (e) {}
+    root.classList.add("intro");
+    setTimeout(function () {
+      root.classList.remove("intro");
+    }, 6000);
+  })();
+</script>
+
 <div class="stage-bg" aria-hidden="true"></div>
 <svg class="drawing" viewBox="0 0 1440 900" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
   {plates.map((p) => <rect class:list={[p.head ? "accent" : "plate"]} x={round(p.x)} y={round(p.y)} width={round(p.w)} height={round(p.h)} opacity={p.o.toFixed(3)} />)}
@@ -353,6 +368,12 @@ const round = (n: number): string => n.toFixed(1);
 
     .hud:global(.large) .hud-value {
       font-size: 1.9rem;
+    }
+
+    /* While the page catches up the readout sits low, clear of the logo. */
+    :global(.intro) .hud {
+      top: auto;
+      bottom: 28px;
     }
   }
 

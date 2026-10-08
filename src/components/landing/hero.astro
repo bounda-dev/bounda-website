@@ -4,16 +4,22 @@ import Install from "../install.astro";
 
 <section class="hero">
   <div class="copy" id="hero-copy">
-    <p class="label eyebrow">Event sourcing and CQRS for TypeScript</p>
-    <h1 class="display"><span>Event sourcing</span> <span>without the</span> <span class="quiet">ceremony.</span></h1>
-    <p class="lead-short"><b>Keep every change as an ordered fact.</b> Rebuild any view from it, on one database.</p>
+    <p class="label eyebrow" data-enter>Event sourcing and CQRS for TypeScript</p>
+    <h1 class="display">
+      <span class="line"><span data-rise style="--enter-delay: 0.06s">Event sourcing</span></span>
+      <span class="line"><span data-rise style="--enter-delay: 0.14s">without the</span></span>
+      <span class="line"><span data-rise class="quiet" style="--enter-delay: 0.22s">ceremony.</span></span>
+    </h1>
+    <p class="lead-short" data-enter style="--enter-delay: 0.38s">
+      <b>Keep every change as an ordered fact.</b> Rebuild any view from it, on one database.
+    </p>
   </div>
   <div class="foot" id="hero-foot">
-    <p class="lead">
+    <p class="lead" data-enter style="--enter-delay: 0.38s">
       <b>Keep every change as an ordered fact and rebuild any view from it.</b> Plain TypeScript modules, inferred types, one
       database. No broker to run.
     </p>
-    <div class="actions">
+    <div class="actions" data-enter style="--enter-delay: 0.46s">
       <Install />
       <div class="links">
         <a class="text-link" href="https://docs.bounda.dev/getting-started/">Read the docs</a>
@@ -63,7 +69,15 @@ import Install from "../install.astro";
     color: var(--text);
   }
 
-  h1 span {
+  /* Each line rises from its own baseline, the way new entries arrive at the end. */
+  .line {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.1em;
+    margin-bottom: -0.1em;
+  }
+
+  .line > span {
     display: block;
   }
 

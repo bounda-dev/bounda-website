@@ -139,6 +139,25 @@ h3 {
   transform: none;
 }
 
+/* The intro (src/scripts/landing/intro.ts): the hero holds back while the page catches up with the
+   stream, then enters in order, each line of the headline rising from its own baseline. */
+.intro [data-enter] {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.intro [data-rise] {
+  transform: translateY(105%);
+}
+
+.intro.entering :is([data-enter], [data-rise]) {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.6s var(--ease) var(--enter-delay, 0s),
+    transform 0.9s var(--ease) var(--enter-delay, 0s);
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-reveal] {
     opacity: 1;
