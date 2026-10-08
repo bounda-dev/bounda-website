@@ -1,0 +1,95 @@
+---
+const command = "npm create bounda@latest my-app";
+---
+
+<div class="install">
+  <span class="prompt" aria-hidden="true">$</span>
+  <code>{command}</code>
+  <button type="button" data-copy={command}>Copy</button>
+</div>
+
+<style>
+  .install {
+    display: inline-flex;
+    align-items: stretch;
+    max-width: 100%;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    /* Opaque enough to read over the scene: a backdrop blur would be redone every frame. */
+    background: color-mix(in srgb, var(--surface) 94%, transparent);
+    font: 500 0.875rem/1 var(--font-mono);
+  }
+
+  .prompt {
+    padding: 14px 0 14px 16px;
+    color: var(--accent-text);
+    user-select: none;
+  }
+
+  code {
+    padding: 14px 16px 14px 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text);
+  }
+
+  button {
+    appearance: none;
+    border: 0;
+    border-left: 1px solid var(--rule);
+    background: transparent;
+    color: var(--muted);
+    padding: 0 16px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-stretch: 125%;
+    font-size: 0.625rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  button:hover {
+    color: var(--text);
+    background: var(--raised);
+  }
+
+  @media (max-width: 760px) {
+    .install {
+      width: 100%;
+      font-size: 0.78rem;
+    }
+
+    .prompt {
+      padding-left: 12px;
+    }
+
+    code {
+      flex: 1;
+      min-width: 0;
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+
+    button {
+      padding: 0 12px;
+    }
+  }
+</style>
+
+<script>
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-copy]")) {
+    button.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(button.dataset.copy ?? "");
+        button.textContent = "Copied";
+      } catch {
+        button.textContent = "Select";
+      }
+      setTimeout(() => {
+        button.textContent = "Copy";
+      }, 1600);
+    });
+  }
+</script>

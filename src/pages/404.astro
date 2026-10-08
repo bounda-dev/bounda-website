@@ -1,49 +1,55 @@
 ---
-import BgShapes from "../components/landing/bg-shapes.astro";
+import Footer from "../components/footer.astro";
+import Nav from "../components/nav.astro";
 import BaseLayout from "../layouts/base.astro";
 ---
 
-<BaseLayout title="Page Not Found — Bounda" description="The page you're looking for doesn't exist.">
-  <BgShapes />
-  <main class="not-found">
-    <h1 class="not-found-code">404</h1>
-    <p class="not-found-message">This page doesn't exist.</p>
-    <div class="not-found-links">
-      <a href="/" class="btn-ghost">Home</a>
-      <a href="https://docs.bounda.dev/getting-started/" class="btn-primary">Documentation</a>
+<BaseLayout title="Page not found — Bounda" description="There is no page at this address.">
+  <Nav />
+  <main id="main-content" class="not-found">
+    <div class="wrap">
+      <p class="label">404</p>
+      <h1 class="display">No page at this position.</h1>
+      <p>The address may have changed. The documentation and the code are where they were.</p>
+      <div class="links">
+        <a class="text-link" href="/">Home</a>
+        <a class="text-link" href="https://docs.bounda.dev/getting-started/">Documentation</a>
+        <a class="text-link dim" href="https://github.com/bounda-dev/bounda">GitHub</a>
+      </div>
     </div>
   </main>
+  <Footer />
 </BaseLayout>
 
 <style>
   .not-found {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
     min-height: 100vh;
-    text-align: center;
-    padding: 2rem;
-    gap: 1rem;
+    padding: 120px 0 80px;
   }
 
-  .not-found-code {
-    font-size: clamp(4rem, 12vw, 8rem);
-    font-weight: 700;
-    letter-spacing: -0.04em;
-    line-height: 1;
-    color: var(--fg-muted);
-    opacity: 0.3;
+  .wrap {
+    width: 100%;
   }
 
-  .not-found-message {
-    font-size: 1.1rem;
-    color: var(--fg-muted);
+  h1 {
+    max-width: 14ch;
+    margin: 18px 0 22px;
+    font-size: clamp(2.1rem, 1.2rem + 3.6vw, 4.8rem);
+    line-height: 0.98;
+    letter-spacing: -0.012em;
   }
 
-  .not-found-links {
+  p:not(.label) {
+    max-width: 40ch;
+    margin: 0 0 32px;
+    color: var(--muted);
+  }
+
+  .links {
     display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
+    flex-wrap: wrap;
+    gap: 22px 28px;
   }
 </style>

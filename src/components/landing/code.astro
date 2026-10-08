@@ -1,0 +1,250 @@
+---
+import { Code } from "astro:components";
+import { codeTheme } from "../../code-theme";
+
+const files = [
+  {
+    title: "Command handler",
+    role: "decides",
+    code: `// app/domain/order/commands/place-order.ts
+import { DomainError } from "@bounda-dev/core";
+import type { Command } from "./+types/place-order";
+
+export const payload = ({ z }: Command.PayloadArgs) =>
+  z.object({ orderId: z.uuid(), customerId: z.string().min(1), total: z.number().positive() });
+
+export const handler = ({ command, state, events }: Command.HandlerArgs) => {
+  if (state.status !== "new") {
+    throw new DomainError(\`Order \${command.aggregateId} was already placed\`);
+  }
+  return [
+    events.orderPlaced({ customerId: command.payload.customerId, total: command.payload.total }),
+  ];
+};`,
+  },
+  {
+    title: "Event",
+    role: "applies",
+    code: `// app/domain/order/order-placed.ts
+import type { Event } from "./+types/order-placed";
+
+export const payload = ({ z }: Event.PayloadArgs) =>
+  z.object({ customerId: z.string(), total: z.number().positive() });
+
+export const apply = ({ state, event }: Event.ApplyArgs) => ({
+  ...state,
+  status: "placed" as const,
+  customerId: event.payload.customerId,
+  total: event.payload.total,
+});`,
+  },
+  {
+    title: "Projection",
+    role: "writes a row",
+    code: `// app/read/orders/projections/order-placed.ts
+import type { Projection } from "./+types/order-placed";
+
+export const project = async ({ event, table }: Projection.Args) => {
+  await table.upsert({
+    orderId: event.aggregateId,
+    customerId: event.payload.customerId,
+    total: event.payload.total,
+    placedAt: new Date(event.timestamp),
+  });
+};`,
+  },
+];
+---
+
+<section class="code" id="code">
+  <div class="wrap grid">
+    <span class="rail" aria-hidden="true"></span>
+    <div class="intro" data-reveal>
+      <p class="label">The code</p>
+      <h2 class="display">Three files. Their place and name are the declaration.</h2>
+      <p>
+        A command handler decides, an event applies, a projection writes a row. <code>bounda generate</code> reads the folders and
+        infers every type, so there is no registry to keep in sync.
+      </p>
+      <pre class="tree">app/
+├─ domain/order/
+│  ├─ commands/<b>place-order.ts</b>
+│  └─ <b>order-placed.ts</b>
+└─ read/orders/
+   └─ projections/<b>order-placed.ts</b></pre>
+    </div>
+    <div class="files">
+      {
+        files.map((file, i) => (
+          <figure class="file" data-reveal style={`--delay: ${i * 0.08}s`}>
+            <figcaption>
+              <b>{file.title}</b>
+              <span>{file.role}</span>
+            </figcaption>
+            <Code code={file.code} lang="ts" theme={codeTheme} />
+          </figure>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .code {
+    position: relative;
+    z-index: 5;
+    background: var(--bg);
+    border-top: 1px solid var(--rule);
+  }
+
+  .grid {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 3.5fr) minmax(0, 8.5fr);
+    gap: clamp(28px, 3.4vw, 56px);
+    align-items: start;
+    padding-top: clamp(72px, 12vh, 140px);
+    padding-bottom: clamp(72px, 10vh, 120px);
+  }
+
+  /* The stream's ochre, carried down beside the code as a rule. */
+  .rail {
+    position: absolute;
+    top: -1px;
+    bottom: 0;
+    left: calc(var(--gutter) * 0.5 - 1px);
+    width: 2px;
+    pointer-events: none;
+    background: linear-gradient(180deg, var(--accent) 0, var(--accent) 70vh, var(--rule) 130vh);
+  }
+
+  .rail::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -5px;
+    right: -5px;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 50%, transparent) 0, transparent 80vh);
+    filter: blur(5px);
+  }
+
+  .intro {
+    position: sticky;
+    top: 48px;
+  }
+
+  h2 {
+    margin: 18px 0 22px;
+    font-size: clamp(1.6rem, 1rem + 1.5vw, 2.4rem);
+    line-height: 1.04;
+  }
+
+  .intro p:not(.label) {
+    max-width: 38ch;
+    margin: 0 0 28px;
+    color: var(--muted);
+  }
+
+  .intro code {
+    font-size: 0.9em;
+    color: var(--text);
+  }
+
+  .tree {
+    margin: 0;
+    padding: 18px 0 0;
+    border-top: 1px solid var(--rule);
+    overflow-x: auto;
+    font-size: 0.8125rem;
+    line-height: 1.75;
+    white-space: pre;
+    color: var(--muted);
+  }
+
+  .tree b {
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .files {
+    display: grid;
+    gap: 18px;
+    min-width: 0;
+  }
+
+  .file {
+    min-width: 0;
+    margin: 0;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  figcaption {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--rule);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-stretch: 125%;
+    font-size: 0.625rem;
+    line-height: 1.2;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  figcaption b {
+    display: inline-flex;
+    gap: 10px;
+    align-items: center;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  figcaption b::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+  }
+
+  .file :global(pre) {
+    margin: 0;
+    padding: 18px 18px 20px;
+    overflow-x: auto;
+    background: transparent !important;
+    font-size: 0.8rem;
+    line-height: 1.7;
+    tab-size: 2;
+  }
+
+  @media (max-width: 760px) {
+    .grid {
+      grid-template-columns: minmax(0, 1fr);
+      padding-left: calc(var(--gutter) + 8px);
+    }
+
+    .rail {
+      left: 6px;
+    }
+
+    .intro {
+      position: relative;
+      top: auto;
+    }
+
+    .file :global(pre) {
+      padding: 14px;
+      font-size: 0.75rem;
+    }
+  }
+
+  :global(.still) .rail {
+    display: none;
+  }
+</style>

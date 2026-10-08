@@ -1,0 +1,272 @@
+---
+// Seven captions over the pinned scene. Each `data-window` is the span of beats it is shown for
+// (see src/scripts/landing/timeline.ts); with reduced motion they lay out as a plain grid instead.
+---
+
+<section class="story" id="story" aria-label="How Bounda works">
+  <div class="pin">
+    <div class="scrim"></div>
+    <div class="captions">
+      <article class="caption" data-window="0.62,1.55">
+        <p class="kicker">Command handler</p>
+        <h2 class="display">A command asks.</h2>
+        <p><code>PlaceOrder</code> arrives with a payload its schema checks. The handler reads the order's current state and decides.</p>
+      </article>
+      <article class="caption" data-window="1.6,2.5">
+        <p class="kicker">Event store</p>
+        <h2 class="display">The answer is a fact.</h2>
+        <p><code>OrderPlaced</code> is appended to the global stream at position 4,212. Facts are never edited or deleted.</p>
+      </article>
+      <article class="caption" data-window="2.55,3.38">
+        <p class="kicker">Apply</p>
+        <h2 class="display">State is a fold.</h2>
+        <p>The global stream interleaves every aggregate. <code>apply</code> folds only order/7f3a's events, in order: created, item added, placed.</p>
+      </article>
+      <article class="caption" data-window="3.42,4.26">
+        <p class="kicker">Projection</p>
+        <h2 class="display">Facts become rows.</h2>
+        <p>The <code>order-placed</code> projection upserts one row into the <code>orders</code> read model.</p>
+      </article>
+      <article class="caption" data-window="4.3,5.12">
+        <p class="kicker">Read model</p>
+        <h2 class="display">Queries read rows.</h2>
+        <p>Reads go to the read model and never touch the event store. Commands go in on one side, queries come out the other.</p>
+      </article>
+      <article class="caption" data-window="5.18,7.2">
+        <p class="kicker">bounda rebuild orders</p>
+        <h2 class="display">Replay from position&nbsp;1.</h2>
+        <p>Drop a read model, rewind to the first fact and read the global stream into it again. The events stay exactly as they were.</p>
+      </article>
+      <article class="caption" data-window="7.2,8">
+        <p class="kicker">Global stream</p>
+        <h2 class="display">Same events. Same rows.</h2>
+        <p>Change a projection, rebuild, and the read model catches up from history.</p>
+      </article>
+    </div>
+    <ol class="rail" id="rail" aria-hidden="true">
+      <li>Command</li><li>Event</li><li>State</li><li>Projection</li><li>Query</li><li>Rebuild</li>
+    </ol>
+  </div>
+</section>
+
+<style>
+  .story {
+    position: relative;
+    height: 480vh;
+  }
+
+  .pin {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    height: 100vh;
+    height: 100svh;
+    overflow: hidden;
+  }
+
+  .scrim {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--bg) 92%, transparent) 0%,
+      color-mix(in srgb, var(--bg) 88%, transparent) 30%,
+      color-mix(in srgb, var(--bg) 44%, transparent) 42%,
+      transparent 52%
+    );
+  }
+
+  .captions {
+    position: absolute;
+    left: var(--gutter);
+    top: 50%;
+    width: min(400px, 34vw);
+    height: 340px;
+    transform: translateY(-46%);
+  }
+
+  .caption {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    opacity: 0;
+    pointer-events: none;
+    will-change: opacity, transform;
+  }
+
+  .kicker {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-stretch: 125%;
+    font-size: 0.6875rem;
+    line-height: 1.3;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent-text);
+  }
+
+  .kicker::before {
+    content: "";
+    width: 18px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  .caption h2 {
+    margin: 0.6em 0 0.5em;
+    font-size: clamp(1.75rem, 1.1rem + 1.9vw, 2.8rem);
+    line-height: 1.02;
+  }
+
+  .caption p:not(.kicker) {
+    max-width: 34ch;
+    margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.58;
+    color: var(--muted);
+  }
+
+  .caption code {
+    font-size: 0.92em;
+    color: var(--text);
+  }
+
+  .rail {
+    position: absolute;
+    left: var(--gutter);
+    bottom: clamp(26px, 6vh, 60px);
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-stretch: 125%;
+    font-size: 0.625rem;
+    line-height: 1;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    will-change: opacity;
+  }
+
+  .rail li {
+    position: relative;
+    padding: 14px 22px 0 0;
+    color: var(--muted);
+    transition: color 0.3s linear;
+  }
+
+  .rail li::before,
+  .rail li::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 1px;
+  }
+
+  .rail li::before {
+    right: 6px;
+    background: var(--rule);
+  }
+
+  .rail li::after {
+    width: calc((100% - 6px) * var(--progress, 0));
+    background: var(--accent);
+  }
+
+  .rail li:global(.on) {
+    color: var(--text);
+  }
+
+  @media (max-width: 760px) {
+    .scrim {
+      background: linear-gradient(
+        0deg,
+        color-mix(in srgb, var(--bg) 95%, transparent) 0%,
+        color-mix(in srgb, var(--bg) 82%, transparent) 30%,
+        transparent 54%
+      );
+    }
+
+    .captions {
+      left: 16px;
+      right: 16px;
+      top: auto;
+      bottom: 28px;
+      width: auto;
+      height: 250px;
+      transform: none;
+    }
+
+    .caption {
+      top: auto;
+      bottom: 0;
+    }
+
+    .caption h2 {
+      font-size: 1.7rem;
+    }
+
+    .caption p:not(.kicker) {
+      font-size: 1rem;
+    }
+
+    .rail {
+      display: none;
+    }
+  }
+
+  /* A still page: no pinning, the captions read as a grid. */
+  :global(.still) .story {
+    height: auto;
+    z-index: 5;
+    background: var(--bg);
+    border-top: 1px solid var(--rule);
+  }
+
+  :global(.still) .pin {
+    position: relative;
+    height: auto;
+    padding: 80px 0;
+  }
+
+  :global(.still) .scrim,
+  :global(.still) .rail {
+    display: none;
+  }
+
+  :global(.still) .captions {
+    position: relative;
+    left: auto;
+    top: auto;
+    bottom: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 48px 36px;
+    width: auto;
+    height: auto;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 var(--gutter);
+    transform: none;
+  }
+
+  :global(.still) .caption {
+    position: relative;
+    opacity: 1;
+    pointer-events: auto;
+    padding-top: 22px;
+    border-top: 1px solid var(--rule);
+  }
+
+  :global(.still) .caption h2 {
+    font-size: clamp(1.45rem, 1rem + 1vw, 2rem);
+  }
+</style>

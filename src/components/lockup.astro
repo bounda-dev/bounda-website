@@ -1,0 +1,24 @@
+---
+// The Ledger lockup: the ⅃ module (bar 10, foot 6 by 25, tail 8) and a wordmark drawn on it,
+// verticals 10 and horizontals 6, whose d descends by the tail. Colour is the text colour, never ochre.
+interface Props {
+  readonly class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<svg class:list={["lockup", className]} viewBox="0 0 361 65" fill="currentColor" aria-hidden="true">
+  <path
+    fill-rule="evenodd"
+    d="M25 0h10v65H25v-8H0v-6h25zM60 0H70V17H89A13 13 0 0 1 102 30V44A13 13 0 0 1 89 57H60V0ZM70 23V51H89A3 7 0 0 0 92 44V30A3 7 0 0 0 89 23H70ZM125 17H141A13 13 0 0 1 154 30V44A13 13 0 0 1 141 57H125A13 13 0 0 1 112 44V30A13 13 0 0 1 125 17ZM122 30V44A3 7 0 0 0 125 51H141A3 7 0 0 0 144 44V30A3 7 0 0 0 141 23H125A3 7 0 0 0 122 30ZM165 17H175V44A3 7 0 0 0 178 51H195V17H205V57H178A13 13 0 0 1 165 44V17ZM217 17H244A13 13 0 0 1 257 30V57H247V30A3 7 0 0 0 244 23H227V57H217V17ZM300 0H310V65H300V57H281A13 13 0 0 1 268 44V30A13 13 0 0 1 281 17H300V0ZM278 30V44A3 7 0 0 0 281 51H300V23H281A3 7 0 0 0 278 30ZM325 17H348A13 13 0 0 1 361 30V57H333A12 12 0 0 1 321 45V44A12 12 0 0 1 333 32H351V30A3 7 0 0 0 348 23H325V17ZM331 44V45A2 6 0 0 0 333 51H351V38H333A2 6 0 0 0 331 44Z"
+  ></path>
+</svg>
+
+<style>
+  .lockup {
+    display: block;
+    height: 22px;
+    width: auto;
+  }
+</style>

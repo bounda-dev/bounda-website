@@ -1,218 +1,102 @@
 ---
-const command = "npm create bounda@latest my-app";
+import Install from "../install.astro";
 ---
 
-<section class="l-cta" id="get-started">
-  <div class="l-cta-glow" aria-hidden="true"></div>
-  <div class="container l-cta-inner">
-    <p class="section-label">Get Started</p>
-    <h2 class="gradient-text">Up and running in seconds</h2>
-
-    <div class="l-terminal">
-      <div class="l-terminal-bar">
-        <span class="dot dot-red"></span>
-        <span class="dot dot-yellow"></span>
-        <span class="dot dot-green"></span>
+<section class="cta" id="cta">
+  <div class="wrap">
+    <div class="box" data-reveal>
+      <p class="label eyebrow">Start</p>
+      <h2 class="display">Start with one aggregate.</h2>
+      <p>Scaffold a project with a domain, a read model and a test, on SQLite, PostgreSQL or Cloudflare.</p>
+      <Install />
+      <div class="links">
+        <a class="text-link" href="https://docs.bounda.dev/getting-started/">Documentation</a>
+        <a class="text-link" href="https://github.com/bounda-dev/bounda">GitHub</a>
       </div>
-      <div class="l-terminal-body">
-        <span class="l-terminal-prompt">$</span>
-        <code id="cta-cmd">{command}<span class="l-cursor" aria-hidden="true"></span></code>
-        <button class="l-copy-btn" aria-label="Copy command" data-command={command}>
-          <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-          </svg>
-          <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-        </button>
-      </div>
+      <p class="note">
+        Before 1.0 a minor release can change the API. <a href="https://www.npmjs.com/org/bounda-dev">The packages on npm</a>.
+      </p>
     </div>
-    <a href="https://docs.bounda.dev/getting-started/" class="l-docs-link">Read the docs →</a>
-    <p class="l-cta-alpha">
-      Alpha: every published version is a prerelease and the API can change between them.
-      <a href="https://www.npmjs.com/org/bounda-dev" target="_blank" rel="noopener">The packages on npm</a>.
-    </p>
   </div>
 </section>
 
 <style>
-  .l-cta-alpha {
-    margin-top: 1.5rem;
-    font-size: 0.875rem;
-    color: var(--text-muted, #94a3b8);
-  }
-
-  .l-cta-alpha a {
-    color: inherit;
-    text-decoration: underline;
-  }
-
-  .l-cta {
+  /* Transparent, so the ⅃ comes back into view behind it. */
+  .cta {
     position: relative;
-    padding-block: var(--section-gap);
-    overflow: hidden;
-  }
-
-  .l-cta-glow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 800px;
-    height: 400px;
-    background: radial-gradient(
-      ellipse 60% 50% at 50% 50%,
-      rgba(59, 130, 246, 0.08) 0%,
-      transparent 70%
-    );
-    pointer-events: none;
-  }
-
-  :global([data-theme="light"]) .l-cta-glow {
-    background: radial-gradient(
-      ellipse 60% 50% at 50% 50%,
-      rgba(59, 130, 246, 0.1) 0%,
-      transparent 70%
-    );
-  }
-
-  .l-cta-inner {
-    position: relative;
+    z-index: 5;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 1.5rem;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding-top: clamp(96px, 16vh, 150px);
+    border-top: 1px solid var(--rule);
   }
 
-  .l-terminal {
+  .wrap {
     width: 100%;
-    max-width: 560px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: calc(var(--radius) + 2px);
-    overflow: hidden;
-    box-shadow:
-      0 20px 60px rgba(0, 0, 0, 0.4),
-      0 0 60px rgba(59, 130, 246, 0.05);
-    transition: box-shadow 0.3s;
   }
 
-  .l-terminal:hover {
-    box-shadow:
-      0 24px 70px rgba(0, 0, 0, 0.5),
-      0 0 80px rgba(59, 130, 246, 0.1);
+  .box {
+    max-width: 620px;
   }
 
-  :global([data-theme="light"]) .l-terminal {
-    box-shadow:
-      0 8px 30px rgba(0, 0, 0, 0.08),
-      0 0 40px rgba(59, 130, 246, 0.03);
-  }
-
-  :global([data-theme="light"]) .l-terminal:hover {
-    box-shadow:
-      0 12px 40px rgba(0, 0, 0, 0.12),
-      0 0 60px rgba(59, 130, 246, 0.06);
-  }
-
-  .l-terminal-bar {
+  .eyebrow {
     display: flex;
-    gap: 0.4rem;
-    padding: 0.8rem 1rem;
-    border-bottom: 1px solid var(--border);
-    background: color-mix(in srgb, var(--surface) 50%, var(--bg));
-  }
-
-  .dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .dot-red { background: #ff5f57; }
-  .dot-yellow { background: #febc2e; }
-  .dot-green { background: #28c840; }
-
-  .l-terminal-body {
-    display: flex;
+    gap: 14px;
     align-items: center;
-    gap: 0.75rem;
-    padding: 1.1rem 1.25rem;
   }
 
-  .l-terminal-prompt {
-    color: var(--accent);
-    font-family: "SF Mono", "Fira Code", monospace;
-    font-size: 0.9rem;
-    flex-shrink: 0;
-  }
-
-  .l-terminal-body code {
-    font-family: "SF Mono", "Fira Code", monospace;
-    font-size: 0.85rem;
-    color: var(--fg);
-    flex: 1;
-    text-align: left;
-    overflow-x: auto;
-    white-space: nowrap;
-  }
-
-  .l-cursor {
-    display: inline-block;
-    width: 2px;
-    height: 0.9em;
+  .eyebrow::before {
+    content: "";
+    width: 28px;
+    height: 1px;
     background: var(--accent);
-    margin-left: 2px;
-    vertical-align: text-bottom;
-    animation: blink 1.1s step-end infinite;
   }
 
-  .l-copy-btn {
-    color: var(--fg-muted);
-    padding: 0.4rem;
-    border-radius: 4px;
-    flex-shrink: 0;
-    transition: color 0.2s, background 0.2s;
-    min-width: 44px;
-    min-height: 44px;
+  h2 {
+    margin: 20px 0 22px;
+    font-size: clamp(2.1rem, 1.2rem + 3.6vw, 4.8rem);
+    line-height: 0.98;
+    letter-spacing: -0.012em;
+  }
+
+  .box > p:not(.label) {
+    max-width: 40ch;
+    margin: 0 0 32px;
+    color: var(--muted);
+  }
+
+  .links {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-wrap: wrap;
+    gap: 22px 28px;
+    margin-top: 32px;
   }
 
-  .l-copy-btn:hover {
-    color: var(--fg);
-    background: var(--border);
+  .box > .note {
+    margin: 28px 0 0;
+    font-size: 0.875rem;
   }
 
-  .l-copy-btn .check-icon { display: none; }
-  .l-copy-btn.copied .copy-icon { display: none; }
-  .l-copy-btn.copied .check-icon { display: block; color: #28c840; }
-
-  .l-docs-link {
-    display: inline-block;
-    padding: 0.75rem 1rem;
-    font-size: 0.85rem;
-    color: var(--fg-muted);
-    transition: color 0.2s;
+  .note a {
+    color: var(--text);
+    text-decoration-color: var(--accent);
+    text-underline-offset: 3px;
   }
 
-  .l-docs-link:hover {
-    color: var(--fg);
+  @media (max-width: 760px) {
+    .cta {
+      align-items: flex-end;
+      padding-top: 0;
+      padding-bottom: 56px;
+    }
+
+    h2 {
+      margin-top: 14px;
+    }
+  }
+
+  :global(.still) .cta {
+    background: var(--bg);
   }
 </style>
-
-<script>
-  const copyBtn = document.querySelector<HTMLButtonElement>(".l-copy-btn");
-  if (copyBtn) {
-    copyBtn.addEventListener("click", async () => {
-      const cmd = copyBtn.dataset.command ?? "";
-      await navigator.clipboard.writeText(cmd);
-      copyBtn.classList.add("copied");
-      setTimeout(() => copyBtn.classList.remove("copied"), 2000);
-    });
-  }
-</script>

@@ -1,0 +1,255 @@
+---
+// The ledger grammar on a real stream: position first, tabular figures, a correction as a new row in
+// parentheses, and a closed balance under a double rule with the ⅃ in its corner.
+interface Entry {
+  readonly position: string;
+  readonly event: string;
+  readonly amount: string | null;
+  readonly correction?: boolean;
+}
+
+const entries: readonly Entry[] = [
+  { position: "004 198", event: "OrderCreated", amount: null },
+  { position: "004 206", event: "ItemAdded", amount: "129.00" },
+  { position: "004 212", event: "OrderPlaced", amount: null },
+  { position: "004 219", event: "PriceCorrected", amount: "(20.00)", correction: true },
+];
+---
+
+<section class="ledger" aria-labelledby="ledger-title">
+  <div class="wrap grid">
+    <div class="intro" data-reveal>
+      <p class="label">The global stream</p>
+      <h2 class="display" id="ledger-title">Nothing is rewritten.</h2>
+      <p>A wrong price is not edited. The correction is a new fact at the end of the stream, and the total is read from every fact in order.</p>
+    </div>
+    <figure class="book" data-book>
+      <div class="head"><span class="label">Stream</span><code>order/7f3a</code></div>
+      <table>
+        <thead>
+          <tr><th scope="col">Position</th><th scope="col">Event</th><th scope="col" class="amount">Amount</th></tr>
+        </thead>
+        <tbody>
+          {
+            entries.map((e) => (
+              <tr data-row class:list={{ correction: e.correction }}>
+                <td class="position">{e.position}</td>
+                <td>{e.event}</td>
+                <td class:list={["amount", { empty: e.amount === null }]}>{e.amount ?? "–"}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+        <tfoot>
+          <tr>
+            <td></td>
+            <th scope="row" class="total">Total</th>
+            <td class="amount closed">
+              109.00
+              <svg class="corner" viewBox="0 0 35 65" aria-hidden="true"><path fill="currentColor" d="M25 0h10v65H25v-8H0v-6h25z"></path></svg>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+      <figcaption>Positions are global. The gaps between them are other streams' facts.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<style>
+  .ledger {
+    position: relative;
+    z-index: 5;
+    background: var(--bg);
+    border-top: 1px solid var(--rule);
+    padding: clamp(72px, 11vh, 130px) 0;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: clamp(28px, 3.4vw, 56px);
+    align-items: start;
+  }
+
+  h2 {
+    margin: 18px 0 22px;
+    font-size: clamp(1.6rem, 1rem + 1.5vw, 2.4rem);
+    line-height: 1.04;
+  }
+
+  .intro p:not(.label) {
+    max-width: 38ch;
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .book {
+    position: relative;
+    margin: 0;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .head code {
+    font-size: 0.8125rem;
+    color: var(--text);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font: 400 0.875rem/1.4 var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  th {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--rule);
+    text-align: left;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-stretch: 125%;
+    font-size: 0.625rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  td {
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--rule);
+    white-space: nowrap;
+    color: var(--text);
+  }
+
+  .position {
+    width: 9.5em;
+    color: var(--muted);
+  }
+
+  .amount {
+    text-align: right;
+  }
+
+  .empty {
+    color: var(--faint);
+  }
+
+  .correction td:not(.position) {
+    color: var(--error);
+  }
+
+  tfoot td,
+  tfoot th {
+    padding: 15px 18px 26px;
+    border-top: 3px double var(--text);
+    border-bottom: 0;
+  }
+
+  tfoot td {
+    font-weight: 600;
+  }
+
+  .closed {
+    position: relative;
+    padding-right: 30px;
+  }
+
+  .corner {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    height: 18px;
+    width: auto;
+    color: var(--accent);
+  }
+
+  figcaption {
+    padding: 12px 18px 14px;
+    border-top: 1px solid var(--rule);
+    font-size: 0.8125rem;
+    color: var(--muted);
+  }
+
+  /* Append-only: the rows arrive one at a time at the end, each flashing once as it lands. */
+  tbody tr {
+    opacity: 0;
+    transform: translateY(8px);
+    transition:
+      opacity 0.6s var(--ease),
+      transform 0.6s var(--ease),
+      background-color 1.2s var(--ease);
+  }
+
+  tbody tr:global(.in) {
+    opacity: 1;
+    transform: none;
+  }
+
+  tbody tr:global(.flash) {
+    background: var(--accent-soft);
+    transition: none;
+  }
+
+  @media (max-width: 1100px) {
+    .grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (max-width: 760px) {
+    table {
+      font-size: 0.8125rem;
+    }
+
+    td,
+    th {
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+
+    .position {
+      width: auto;
+    }
+  }
+
+  :global(.still) tbody tr {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+</style>
+
+<script>
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  for (const book of document.querySelectorAll<HTMLElement>("[data-book]")) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        observer.disconnect();
+        book.querySelectorAll<HTMLElement>("tr[data-row]").forEach((row, i) => {
+          setTimeout(
+            () => {
+              row.classList.add("in", "flash");
+              requestAnimationFrame(() => requestAnimationFrame(() => row.classList.remove("flash")));
+            },
+            reduced ? 0 : 160 + i * 340,
+          );
+        });
+      },
+      { rootMargin: "0px 0px -15% 0px" },
+    );
+    observer.observe(book);
+  }
+</script>

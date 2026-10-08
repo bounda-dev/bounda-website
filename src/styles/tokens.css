@@ -1,26 +1,78 @@
-/* The palette this site and the documentation share. The documentation mirrors these values
-   in docs/src/styles/bounda.css of bounda-dev/bounda, mapped onto Starlight's own variables,
-   so a change here belongs there too. */
+/* The Bounda design system tokens (DESIGN.md), shared with the documentation: docs/src/styles/bounda.css
+   in bounda-dev/bounda maps the same values onto Starlight's variables, so a change here belongs there too.
+   Bone (light) is the ground, Basalt (dark) follows the system or the visitor's choice. Every token exists
+   in both modes. */
 
-:root,
-[data-theme="dark"] {
-  --bg: #09090b;
-  --fg: #fafafa;
-  --fg-muted: #a1a1aa;
-  --surface: #18181b;
-  --border: #27272a;
-  --accent: #3b82f6;
-  --radius: 8px;
-  --container: 1280px;
-  --section-gap: clamp(2.5rem, 5vw, 4rem);
-  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+:root {
+  color-scheme: light;
+
+  --bg: #eceae4;
+  --surface: #f7f6f2;
+  --raised: #e3e0d8;
+  --rule: #d3cfc5;
+  --text: #1a1916;
+  --muted: #5f5b53;
+  --faint: #8f8a7f; /* never text: ticks, rules, empty cells */
+  --accent: #b07114;
+  --accent-text: #8a5508;
+  --accent-soft: #eadfc9;
+  --error: #b3362a;
+  --warning: #725f0b;
+  --success: #2c6b53;
+
+  --code-string: #4f6b5e;
+  --code-type: #4a4e57;
+
+  --font-display: var(--font-science-gothic), "Eurostile", "Bahnschrift", "Arial Black", sans-serif;
+  --font-sans: var(--font-ibm-plex-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-red-hat-mono), ui-monospace, "SF Mono", Menlo, monospace;
+
+  --gutter: clamp(16px, 4vw, 64px);
+  --max-width: 1312px;
+  --radius: 2px;
+  --ease: cubic-bezier(0.22, 0.8, 0.16, 1);
 }
 
-[data-theme="light"] {
-  --bg: #fafafa;
-  --fg: #09090b;
-  --fg-muted: #52525b;
-  --surface: #ffffff;
-  --border: #e4e4e7;
-  --accent: #3b82f6;
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --bg: #121314;
+    --surface: #1b1c1e;
+    --raised: #232426;
+    --rule: #2e2f32;
+    --text: #e6e0d3;
+    --muted: #9c978c;
+    --faint: #6e6a62;
+    --accent: #d9a04a;
+    --accent-text: #d9a04a;
+    --accent-soft: #2e2414;
+    --error: #e8604f;
+    --warning: #e3c457;
+    --success: #7dbf9c;
+
+    --code-string: #8fc2b0;
+    --code-type: #b9b4a7;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #121314;
+  --surface: #1b1c1e;
+  --raised: #232426;
+  --rule: #2e2f32;
+  --text: #e6e0d3;
+  --muted: #9c978c;
+  --faint: #6e6a62;
+  --accent: #d9a04a;
+  --accent-text: #d9a04a;
+  --accent-soft: #2e2414;
+  --error: #e8604f;
+  --warning: #e3c457;
+  --success: #7dbf9c;
+
+  --code-string: #8fc2b0;
+  --code-type: #b9b4a7;
 }
