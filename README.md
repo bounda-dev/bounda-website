@@ -22,10 +22,11 @@ per-platform optional dependencies. The pnpm lockfile carries all of them.
 
 ## Keeping the two sites coherent
 
-`src/styles/global.css` holds the colours and typography the documentation mirrors in its own
-Starlight theme. A change to those tokens has to be carried across, or the two sites drift apart
-visually — which is the reason this repository is separate from the framework but not independent
-of it.
+[`DESIGN.md`](DESIGN.md) is the design system both sites follow: palette, type, logo, the ledger
+grammar for tables, motion. Its tokens live in `src/styles/tokens.css`, and the documentation
+mirrors them on Starlight's variables in `docs/src/styles/bounda.css` of the framework repository.
+A change to those tokens has to be carried across, or the two sites drift apart visually — which is
+the reason this repository is separate from the framework but not independent of it.
 
 ## Deployment
 

@@ -1,0 +1,108 @@
+---
+const facts = [
+  {
+    label: "bounda generate",
+    title: "Types are inferred.",
+    body: "File place and name are the declaration. There is no registry to maintain.",
+  },
+  {
+    label: "bounda rebuild",
+    title: "Read models rebuild.",
+    body: "Replay the global stream into a fresh read model without touching a single event.",
+  },
+  {
+    label: "Processes and policies",
+    title: "Workflows have a home.",
+    body: "A workflow of several steps is a process next to its aggregate, with its own state, not a state machine buried in a handler.",
+  },
+  {
+    label: "One database",
+    title: "Runs where you are.",
+    body: "PostgreSQL, SQLite or libSQL, or a Cloudflare Durable Object per tenant. React Router integration and OpenTelemetry.",
+  },
+];
+---
+
+<section class="facts" aria-label="What Bounda gives you">
+  <div class="wrap">
+    <div class="grid">
+      {
+        facts.map((f, i) => (
+          <div class="fact" data-reveal style={`--delay: ${i * 0.06}s`}>
+            <p class="label">{f.label}</p>
+            <h3 class="display">{f.title}</h3>
+            <p>{f.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .facts {
+    position: relative;
+    z-index: 5;
+    background: var(--bg);
+    padding: 0 0 clamp(80px, 12vh, 140px);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-top: 1px solid var(--rule);
+  }
+
+  .fact {
+    padding: 26px clamp(16px, 2vw, 28px) 8px 0;
+    margin-right: clamp(16px, 2vw, 28px);
+    border-right: 1px solid var(--rule);
+  }
+
+  .fact:last-child {
+    margin-right: 0;
+    border-right: 0;
+  }
+
+  .label {
+    color: var(--accent-text);
+  }
+
+  h3 {
+    margin: 22px 0 10px;
+    font-size: clamp(1.05rem, 1rem + 0.3vw, 1.25rem);
+    font-stretch: 104%;
+    line-height: 1.15;
+  }
+
+  p:not(.label) {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.58;
+    color: var(--muted);
+  }
+
+  @media (max-width: 1100px) {
+    .grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .fact:nth-child(2) {
+      margin-right: 0;
+      border-right: 0;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .fact {
+      margin-right: 0;
+      border-right: 0;
+      border-bottom: 1px solid var(--rule);
+      padding-bottom: 22px;
+    }
+  }
+</style>

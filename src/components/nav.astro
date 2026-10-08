@@ -1,0 +1,87 @@
+---
+import Lockup from "./lockup.astro";
+import ThemeToggle from "./theme-toggle.astro";
+---
+
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<header class="nav">
+  <a class="brand" href="/" aria-label="Bounda home"><Lockup /></a>
+  <ul>
+    <li><a class="link" href="https://docs.bounda.dev/getting-started/">Docs</a></li>
+    <li><a class="link" href="https://github.com/bounda-dev/bounda">GitHub</a></li>
+    <li><ThemeToggle /></li>
+  </ul>
+</header>
+
+<style>
+  .skip-link {
+    position: absolute;
+    top: -100px;
+    left: var(--gutter);
+    z-index: 20;
+    padding: 10px 14px;
+    background: var(--text);
+    color: var(--bg);
+    font: 500 0.875rem/1 var(--font-sans);
+    text-decoration: none;
+    border-radius: var(--radius);
+  }
+
+  .skip-link:focus {
+    top: 16px;
+  }
+
+  .nav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 6;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px var(--gutter);
+  }
+
+  .brand {
+    display: inline-flex;
+    color: var(--text);
+    line-height: 0;
+  }
+
+  ul {
+    display: flex;
+    gap: clamp(14px, 2.2vw, 30px);
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .link {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-stretch: 125%;
+    font-size: 0.6875rem;
+    line-height: 1;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--muted);
+  }
+
+  .link:hover {
+    color: var(--text);
+  }
+
+  @media (max-width: 760px) {
+    .nav {
+      padding-top: 18px;
+    }
+
+    .brand :global(.lockup) {
+      height: 20px;
+    }
+  }
+</style>

@@ -1,0 +1,290 @@
+// The scroll-driven story: turns scroll into the beat, sets the captions and the readout, and hands
+// every frame to the 3D scene, which loads only where WebGL 2 is available.
+
+import { currentTheme, onThemeChange } from "../theme";
+import {
+  clamp,
+  END,
+  FOLD,
+  formatPosition,
+  HEAD,
+  inWindow,
+  PLATES,
+  positionOf,
+  REWIND,
+  replayProgress,
+  rewindProgress,
+  SEGMENTS,
+  type Stage,
+  seg,
+} from "./timeline";
+
+interface Scene {
+  readonly frame: () => void;
+  readonly still: () => void;
+}
+
+const root = document.documentElement;
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const byId = <T extends HTMLElement>(id: string): T => {
+  const el = document.getElementById(id);
+  if (!el) throw new Error(`#${id} is missing from the landing page`);
+  return el as T;
+};
+
+const story = byId("story");
+const cta = byId("cta");
+const codeRail = byId("code-rail");
+const heroCopy = byId("hero-copy");
+const heroFoot = byId("hero-foot");
+const hud = byId("hud");
+const hudKey = byId("hud-key");
+const hudValue = byId("hud-value");
+const hudSub = byId("hud-sub");
+const hudBar = byId("hud-bar");
+const callouts = byId("callouts");
+const canvas = byId<HTMLCanvasElement>("stage-canvas");
+const rail = byId("rail");
+const scrim = story.querySelector<HTMLElement>(".scrim");
+const vignette = document.querySelector<HTMLElement>(".vignette");
+const railItems = [...rail.querySelectorAll<HTMLElement>("li")];
+const RAIL = [
+  [0.62, 1.6],
+  [1.6, 2.55],
+  [2.55, 3.42],
+  [3.42, 4.3],
+  [4.3, 5.18],
+  [5.18, 7.82],
+] as const;
+const captions = [...story.querySelectorAll<HTMLElement>("[data-window]")].map((el) => {
+  const [a = 0, z = 0] = (el.dataset.window ?? "").split(",").map(Number);
+  return { el, a, z, last: -1 };
+});
+
+const stage: Stage = {
+  beat: 0,
+  mode: "story",
+  theme: currentTheme(),
+  time: 0,
+  ctaProgress: 0,
+  ctaTop: 1,
+  railX: 0.07,
+};
+onThemeChange((theme) => {
+  stage.theme = theme;
+});
+
+// ---- Scroll ↔ beat ----
+let vh = innerHeight;
+let vw = innerWidth;
+const storyLength = SEGMENTS.reduce((sum, [, , length]) => sum + length, 0);
+const measureRail = (): void => {
+  const r = codeRail.getBoundingClientRect();
+  stage.railX = (r.left + r.width / 2) / (root.clientWidth || innerWidth);
+};
+const layout = (): void => {
+  if (!reduced) story.style.height = `${Math.round((storyLength + 1) * vh)}px`;
+  measureRail();
+};
+layout();
+addEventListener("resize", () => {
+  // Mobile browsers resize the viewport as their toolbars come and go; only a real change re-lays the story.
+  if (innerWidth !== vw || Math.abs(innerHeight - vh) > 140) {
+    vw = innerWidth;
+    vh = innerHeight;
+    layout();
+  } else measureRail();
+});
+
+const beatAt = (y: number): number => {
+  const top = story.offsetTop;
+  if (y <= top) return top > 0 ? y / top : 1;
+  let v = (y - top) / vh;
+  for (const [a, b, length] of SEGMENTS) {
+    if (v <= length) return a + (b - a) * (v / length);
+    v -= length;
+  }
+  return END;
+};
+
+// ---- The readout: global stream position first, in the ledger's figures ----
+interface Readout {
+  readonly key: string;
+  readonly value: string;
+  readonly sub: string;
+  readonly position: number;
+  readonly large: boolean;
+}
+
+const readoutAt = (b: number): Readout => {
+  const at = (
+    key: string,
+    value: string,
+    sub: string,
+    position: number,
+    large = false,
+  ): Readout => ({
+    key,
+    value,
+    sub,
+    position,
+    large,
+  });
+  if (b < 0.55)
+    return at(
+      "Global stream · head",
+      formatPosition(HEAD - 1),
+      "order/51c2 · OrderShipped",
+      HEAD - 1,
+    );
+  if (b < 1.55)
+    return at(
+      "Command · order/7f3a",
+      "PlaceOrder",
+      b < 1.1 ? "checking payload" : "accepted · state new",
+      HEAD - 1,
+    );
+  if (b < 2.5) {
+    const n = b < 1.9 ? HEAD - 1 : HEAD;
+    return at("Appended · order/7f3a", formatPosition(n), "OrderPlaced", n);
+  }
+  if (b < 3.4) {
+    const k = b < 2.8 ? 0 : b < 3.02 ? 1 : 2;
+    const step = FOLD[k];
+    if (!step) throw new Error(`no fold step ${k}`);
+    return at(
+      `Apply ${k + 1} of 3 · order/7f3a`,
+      formatPosition(step.position),
+      `${step.name} → ${step.state}`,
+      step.position,
+    );
+  }
+  if (b < 4.3)
+    return at("Projection · orders", "Upsert order/7f3a", b < 4.0 ? "6 rows" : "7 rows", HEAD);
+  if (b < 5.2) return at("Query · orders", "id = '7f3a'", b < 4.6 ? "reading" : "1 row", HEAD);
+  if (b < 7.25) {
+    let n = HEAD;
+    let rows = 7;
+    let key = "Rebuild · orders";
+    if (b < REWIND[0]) rows = Math.round(7 * (1 - seg(b, 5.05, 5.5)));
+    else if (b < 6) {
+      n = positionOf(rewindProgress(b) * PLATES - 1);
+      rows = 0;
+      key = "Rebuild · rewind";
+    } else {
+      const f = replayProgress(b);
+      n = positionOf((1 - f) * PLATES - 1);
+      key = "Rebuild · replay";
+      rows = 0;
+      for (let r = 0; r < 7; r++) if (f > (r + 0.9) / 8) rows++;
+    }
+    n = Math.max(1, Math.round(n));
+    return at(key, formatPosition(n), `${rows} ${rows === 1 ? "row" : "rows"}`, n, b >= REWIND[0]);
+  }
+  return at("Global stream · head", formatPosition(HEAD), "orders · up to date", HEAD);
+};
+
+// ---- Frame ----
+let scene: Scene | null = null;
+let shown = "";
+let target = 0;
+let last = performance.now();
+
+const read = (): number => {
+  const y = scrollY;
+  target = reduced ? 0 : beatAt(y);
+  const storyEnd = story.offsetTop + story.offsetHeight;
+  const r = cta.getBoundingClientRect();
+  const ctaInView = r.top < innerHeight && r.bottom > 0;
+  stage.mode = y < storyEnd ? "story" : ctaInView ? "cta" : "off";
+  stage.ctaProgress = clamp((innerHeight - r.top) / (innerHeight + r.height));
+  stage.ctaTop = r.top / innerHeight;
+  return y;
+};
+
+const frame = (now: number): void => {
+  const dt = Math.min(0.5, Math.max(0, (now - last) / 1000));
+  last = now;
+  stage.time += dt;
+  const y = read();
+  stage.beat += (target - stage.beat) * (1 - Math.exp(-dt * 4.5));
+  if (Math.abs(target - stage.beat) < 1e-4) stage.beat = target;
+  const b = stage.beat;
+
+  // The headline sinks into the scene as the story starts; the rest of the hero fades.
+  if (y < innerHeight * 1.2) {
+    heroCopy.style.transform = `translate3d(0, ${(y * 0.32).toFixed(1)}px, 0)`;
+    heroFoot.style.opacity = (1 - clamp(y / (innerHeight * 0.4))).toFixed(3);
+  }
+  for (const c of captions) {
+    const o = inWindow(b, c.a, c.z, 0.12);
+    if (Math.abs(o - c.last) <= 0.002) continue;
+    c.last = o;
+    const shift = b < (c.a + c.z) / 2 ? (1 - o) * 22 : -(1 - o) * 22;
+    c.el.style.opacity = o.toFixed(3);
+    c.el.style.transform = `translate3d(0, ${shift.toFixed(1)}px, 0)`;
+    c.el.style.visibility = o <= 0.002 ? "hidden" : "visible";
+  }
+  railItems.forEach((li, i) => {
+    const [a, z] = RAIL[i] ?? [0, 0];
+    li.classList.toggle("on", b >= a && b < z);
+    li.style.setProperty("--progress", seg(b, a, z).toFixed(3));
+  });
+
+  // The hand-over: everything but the channel steps back.
+  const handOver = stage.mode === "story" ? seg(b, 7.7, 7.88) : 0;
+  rail.style.opacity = (1 - handOver).toFixed(3);
+  if (scrim) scrim.style.opacity = (1 - handOver).toFixed(3);
+  if (vignette) vignette.style.opacity = (1 - 0.85 * handOver).toFixed(3);
+
+  const r = readoutAt(b);
+  const key = r.key + r.value + r.sub;
+  if (key !== shown) {
+    shown = key;
+    hudKey.textContent = r.key;
+    hudValue.textContent = r.value;
+    hudSub.textContent = r.sub;
+  }
+  hud.classList.toggle("large", r.large && stage.mode === "story");
+  hudBar.style.transform = `translateX(${((-(HEAD - r.position) / HEAD) * 240).toFixed(1)}px)`;
+  let hudOpacity = stage.mode === "story" ? 1 - seg(b, 7.68, 7.8) : 0;
+  if (innerWidth < 760) hudOpacity *= seg(b, 0.55, 0.85);
+  hud.style.opacity = hudOpacity.toFixed(3);
+  callouts.style.visibility = stage.mode === "story" ? "visible" : "hidden";
+  canvas.style.visibility = stage.mode === "off" ? "hidden" : "visible";
+
+  scene?.frame();
+  requestAnimationFrame(frame);
+};
+
+// ---- The scene ----
+const webgl2 = (): boolean => {
+  const probe = document.createElement("canvas").getContext("webgl2");
+  probe?.getExtension("WEBGL_lose_context")?.loseContext();
+  return probe !== null;
+};
+const showDrawing = (): void => root.classList.add("no-webgl");
+
+if (webgl2()) {
+  // On a slow connection the drawing stands in until the scene is ready, then cross-fades to it.
+  const late = setTimeout(showDrawing, 2500);
+  import("./scene")
+    .then(({ startScene }) => {
+      clearTimeout(late);
+      scene = startScene({ canvas, callouts, stage });
+      if (reduced) {
+        scene.still();
+        const redraw = (): void => scene?.still();
+        addEventListener("resize", redraw);
+        onThemeChange(redraw);
+      }
+      root.classList.remove("no-webgl");
+      root.classList.add("webgl");
+    })
+    .catch(() => {
+      clearTimeout(late);
+      showDrawing();
+    });
+} else showDrawing();
+
+if (!reduced) requestAnimationFrame(frame);
