@@ -61,6 +61,11 @@ export const createIntro = ({ root, stream, count, ready }: IntroArgs): Intro =>
     settled = true;
   });
 
+  // Frames can stop (the tab goes to the background); the hero and the scene must come in regardless.
+  setTimeout(() => {
+    if (!finished) enter();
+  }, GIVE_UP_MS + 1500);
+
   const skip = (): void => {
     settled = true;
     finishFrom ??= performance.now();

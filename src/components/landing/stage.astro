@@ -34,7 +34,13 @@ const round = (n: number): string => n.toFixed(1);
   (function () {
     var root = document.documentElement;
     try {
-      if (matchMedia("(prefers-reduced-motion: reduce)").matches || sessionStorage.getItem("bounda-intro")) return;
+      // A page opened in a background tab gets no frames to play the intro with.
+      if (
+        document.visibilityState === "hidden" ||
+        matchMedia("(prefers-reduced-motion: reduce)").matches ||
+        sessionStorage.getItem("bounda-intro")
+      )
+        return;
     } catch (e) {}
     root.classList.add("intro");
     setTimeout(function () {

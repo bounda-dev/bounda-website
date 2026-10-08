@@ -15,9 +15,8 @@ const command = "npm create bounda@latest my-app";
     max-width: 100%;
     border: 1px solid var(--rule);
     border-radius: var(--radius);
-    background: color-mix(in srgb, var(--surface) 84%, transparent);
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
+    /* Opaque enough to read over the scene: a backdrop blur would be redone every frame. */
+    background: color-mix(in srgb, var(--surface) 94%, transparent);
     font: 500 0.875rem/1 var(--font-mono);
   }
 

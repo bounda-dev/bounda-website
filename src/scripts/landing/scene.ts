@@ -139,6 +139,34 @@ const seeded = (seed: number): (() => number) => {
   };
 };
 
+/** Slopes for a monotone cubic through (xs, ys) (Fritsch–Carlson): smooth, and never overshooting a point. */
+const monotoneSlopes = (xs: readonly number[], ys: readonly number[]): number[] => {
+  const n = xs.length;
+  const d = xs.slice(0, -1).map((x, i) => ((ys[i + 1] ?? 0) - (ys[i] ?? 0)) / ((xs[i + 1] ?? x + 1) - x));
+  const m = xs.map((_, i) => {
+    if (i === 0) return d[0] ?? 0;
+    if (i === n - 1) return d[n - 2] ?? 0;
+    const before = d[i - 1] ?? 0;
+    const after = d[i] ?? 0;
+    return before * after <= 0 ? 0 : (before + after) / 2;
+  });
+  d.forEach((di, i) => {
+    if (di === 0) {
+      m[i] = 0;
+      m[i + 1] = 0;
+      return;
+    }
+    const a = (m[i] ?? 0) / di;
+    const b = (m[i + 1] ?? 0) / di;
+    const h = a * a + b * b;
+    if (h <= 9) return;
+    const t = 3 / Math.sqrt(h);
+    m[i] = t * a * di;
+    m[i + 1] = t * b * di;
+  });
+  return m;
+};
+
 /** A world-space position varying for patched shaders. */
 const withWorldPosition = (shader: THREE.WebGLProgramParametersWithUniforms): void => {
   shader.vertexShader = shader.vertexShader
@@ -273,11 +301,16 @@ export const startScene = async ({
     powerPreference: "high-performance",
   });
   const mobile = matchMedia("(pointer: coarse)").matches;
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, mobile ? 1.5 : 2));
+  // Resolution starts at the screen's density and steps down while frames run long (see adapt).
+  let pixelRatio = Math.min(devicePixelRatio || 1, mobile ? 1.5 : 2);
+  renderer.setPixelRatio(pixelRatio);
   renderer.setClearColor(0x000000, 0);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
+  // Shadows are redrawn only when something that casts one has moved (see frame).
+  renderer.shadowMap.autoUpdate = false;
+  let shadowsMoved = true;
 
   let look = LOOKS[stage.theme];
   const accent = new THREE.Color(look.accent);
@@ -850,7 +883,8 @@ export const startScene = async ({
   const mirror = new THREE.Group();
   mirror.scale.y = -1;
   scene.add(mirror);
-  const glyphReflection = fadeReflection(new THREE.MeshPhysicalMaterial(), look.reflection[0]);
+  // A faded reflection shows no clearcoat or brushing, so it takes the plain material.
+  const glyphReflection = fadeReflection(new THREE.MeshStandardMaterial(), look.reflection[0]);
   const reflectedGlyph = new THREE.Mesh(glyphGeometry, glyphReflection);
   reflectedGlyph.renderOrder = 2;
   const plateReflection = fadeReflection(new THREE.MeshStandardMaterial(), look.reflection[1]);
@@ -877,13 +911,16 @@ export const startScene = async ({
     fog.color.setHex(look.fog);
     key.color.setHex(look.keyColor);
     readingLight.color.copy(accent);
+    for (const m of [faces, sides]) {
+      m.clearcoat = look.glyph.clearcoat;
+      m.clearcoatRoughness = look.glyph.clearcoatRoughness;
+    }
     for (const m of [faces, sides, glyphReflection]) {
       m.color.setHex(look.glyph.color);
       m.metalness = look.glyph.metalness;
       m.roughness = look.glyph.roughness;
-      m.clearcoat = look.glyph.clearcoat;
-      m.clearcoatRoughness = look.glyph.clearcoatRoughness;
     }
+    shadowsMoved = true;
     for (const m of [plateMaterial, eventMaterial, plateReflection]) {
       m.color.setHex(look.plate.color);
       m.metalness = look.plate.metalness;
@@ -922,7 +959,7 @@ export const startScene = async ({
 
   // ---- Camera ----
   // b: beat, p: position, t: target, f: field of view, s: frame shift as a fraction of the viewport.
-  // `lin` keys travel at a near-constant speed; `log` keys dolly so the distance shrinks geometrically.
+  // `log` keys dolly so the distance shrinks geometrically.
   interface Pose {
     readonly p: readonly [number, number, number];
     readonly t: readonly [number, number, number];
@@ -931,7 +968,6 @@ export const startScene = async ({
   }
   interface Key extends Pose {
     readonly b: number;
-    readonly lin?: boolean;
     readonly log?: boolean;
     readonly portrait?: Pose;
   }
@@ -961,7 +997,6 @@ export const startScene = async ({
       t: [ROW_X + 0.8, rowY(3), 0],
       f: 40,
       s: [0.18, 0.06],
-      lin: true,
       portrait: { p: [TAIL - 2.6, 2.0, -2.6], t: [ROW_X + 0.8, rowY(3), 0], f: 52, s: [0, -0.06] },
     },
     {
@@ -970,7 +1005,6 @@ export const startScene = async ({
       t: [ROW_X + 0.6, rowY(3), 0],
       f: 40,
       s: [0.18, 0.06],
-      lin: true,
       portrait: { p: [HEAD - 4.4, 2.4, -3.4], t: [ROW_X + 0.6, rowY(3), 0], f: 52, s: [0, -0.06] },
     },
     { b: 7.6, p: [5.8, 2.9, 13.4], t: [-0.1, 1.5, 0], f: 30, s: SIDE },
@@ -1013,13 +1047,13 @@ export const startScene = async ({
   };
   // On a tall screen a key without its own portrait pose pulls back and widens.
   const portraitOf = (k: Key): Key => {
-    if (k.portrait) return { ...k.portrait, b: k.b, lin: k.lin, log: k.log };
+    if (k.portrait) return { ...k.portrait, b: k.b, log: k.log };
     const p = k.p.map((v, i) => (k.t[i] ?? 0) + (v - (k.t[i] ?? 0)) * 1.8) as unknown as readonly [
       number,
       number,
       number,
     ];
-    return { p, t: k.t, f: k.f + 6, s: [0, -0.05], b: k.b, lin: k.lin };
+    return { p, t: k.t, f: k.f + 6, s: [0, -0.05], b: k.b };
   };
   let portrait = false;
   let poses: readonly Key[] = keys();
@@ -1027,25 +1061,49 @@ export const startScene = async ({
   const camPosition = new THREE.Vector3();
   const camTarget = new THREE.Vector3();
   let frameShift: readonly [number, number] = [0, 0];
+  // The camera passes through every key without stopping at it: each pose component follows a
+  // monotone cubic through the keys, so its speed is continuous and it never overshoots a framing.
+  const componentsOf = (k: Pose): readonly number[] => [k.p[0], k.p[1], k.p[2], k.t[0], k.t[1], k.t[2], k.f, k.s[0], k.s[1]];
+  let path: { beats: number[]; values: number[][]; slopes: number[][] } = { beats: [], values: [], slopes: [] };
+  const fitPath = (): void => {
+    const beats = poses.map((k) => k.b);
+    const values = Array.from({ length: 9 }, (_, c) => poses.map((k) => componentsOf(k)[c] ?? 0));
+    path = { beats, values, slopes: values.map((v) => monotoneSlopes(beats, v)) };
+  };
+  const along = (component: number, i: number, t: number, span: number): number => {
+    const y0 = path.values[component]?.[i] ?? 0;
+    const y1 = path.values[component]?.[i + 1] ?? 0;
+    const m0 = (path.slopes[component]?.[i] ?? 0) * span;
+    const m1 = (path.slopes[component]?.[i + 1] ?? 0) * span;
+    const t2 = t * t;
+    const t3 = t2 * t;
+    return (2 * t3 - 3 * t2 + 1) * y0 + (t3 - 2 * t2 + t) * m0 + (-2 * t3 + 3 * t2) * y1 + (t3 - t2) * m1;
+  };
   const pose = (b: number): void => {
     let i = 0;
     while (i < poses.length - 2 && b > (poses[i + 1]?.b ?? Infinity)) i++;
     const A = poses[i];
     const Z = poses[i + 1];
     if (!A || !Z) return;
-    let f = clamp((b - A.b) / (Z.b - A.b));
-    f = Z.lin ? f + (ease5(f) - f) * 0.35 : ease5(f);
-    let fp = f;
     if (Z.log) {
+      // The hand-over: the distance to the channel shrinks geometrically, a constant apparent speed in.
+      const f = ease5(clamp((b - A.b) / (Z.b - A.b)));
       const dA = Math.hypot(A.p[0] - A.t[0], A.p[1] - A.t[1], A.p[2] - A.t[2]);
       const dZ = Math.hypot(Z.p[0] - Z.t[0], Z.p[1] - Z.t[1], Z.p[2] - Z.t[2]);
-      const ff = seg(b, A.b, Z.b);
-      fp = (dA - dA * (dZ / dA) ** ff) / (dA - dZ);
+      const fp = (dA - dA * (dZ / dA) ** seg(b, A.b, Z.b)) / (dA - dZ);
+      camPosition.set(lerp(A.p[0], Z.p[0], fp), lerp(A.p[1], Z.p[1], fp), lerp(A.p[2], Z.p[2], fp));
+      camTarget.set(lerp(A.t[0], Z.t[0], f), lerp(A.t[1], Z.t[1], f), lerp(A.t[2], Z.t[2], f));
+      camera.fov = lerp(A.f, Z.f, f);
+      frameShift = [lerp(A.s[0], Z.s[0], f), lerp(A.s[1], Z.s[1], f)];
+      return;
     }
-    camPosition.set(lerp(A.p[0], Z.p[0], fp), lerp(A.p[1], Z.p[1], fp), lerp(A.p[2], Z.p[2], fp));
-    camTarget.set(lerp(A.t[0], Z.t[0], f), lerp(A.t[1], Z.t[1], f), lerp(A.t[2], Z.t[2], f));
-    camera.fov = lerp(A.f, Z.f, f);
-    frameShift = [lerp(A.s[0], Z.s[0], f), lerp(A.s[1], Z.s[1], f)];
+    const span = Z.b - A.b;
+    const t = clamp((b - A.b) / span);
+    const v = (component: number): number => along(component, i, t, span);
+    camPosition.set(v(0), v(1), v(2));
+    camTarget.set(v(3), v(4), v(5));
+    camera.fov = v(6);
+    frameShift = [v(7), v(8)];
   };
   const applyCamera = (): void => {
     camera.position.copy(camPosition);
@@ -1071,6 +1129,7 @@ export const startScene = async ({
     // The hand-over lands the channel exactly on the code section's rail.
     handOverShift = [stage.railX - 0.5, 0];
     poses = portrait ? keys().map(portraitOf) : keys();
+    fitPath();
   };
   resize();
   addEventListener("resize", resize);
@@ -1362,8 +1421,39 @@ export const startScene = async ({
     camPosition.y += Math.sin(time * 0.17 + 1.3) * 0.05 * amount;
   };
 
+  // Every 60 frames: if more than a fifth ran over 20 ms, a quarter step less resolution, down to 1.
+  let lastFrameAt = 0;
+  let sampled = 0;
+  let slow = 0;
+  const adapt = (now: number): void => {
+    const dt = now - lastFrameAt;
+    lastFrameAt = now;
+    if (dt > 250 || pixelRatio <= 1) return; // a gap (the tab was away), or nothing left to give
+    sampled++;
+    if (dt > 20) slow++;
+    if (sampled < 60) return;
+    if (slow > 12) {
+      pixelRatio = Math.max(1, pixelRatio - 0.25);
+      renderer.setPixelRatio(pixelRatio);
+      resize();
+    }
+    sampled = 0;
+    slow = 0;
+  };
+
+  let shadowBeat = Number.NaN;
+  const render = (beat: number): void => {
+    if (shadowsMoved || beat !== shadowBeat) {
+      renderer.shadowMap.needsUpdate = true;
+      shadowBeat = beat;
+      shadowsMoved = false;
+    }
+    renderer.render(scene, camera);
+  };
+
   const frame = (): void => {
     if (stage.mode === "off") return;
+    adapt(performance.now());
     applyTheme(stage.theme);
     const time = stage.time;
     if (stage.mode === "cta") {
@@ -1403,7 +1493,7 @@ export const startScene = async ({
       }
       placeCallouts(b);
     }
-    renderer.render(scene, camera);
+    render(stage.mode === "cta" ? 7.6 : stage.beat);
   };
 
   const still = (): void => {
@@ -1412,7 +1502,8 @@ export const startScene = async ({
     update(0, 2.6, true);
     pose(0);
     applyCamera();
-    renderer.render(scene, camera);
+    shadowsMoved = true;
+    render(0);
   };
 
   // Compile every program before the first frame, hidden objects included, so the scene neither

@@ -92,22 +92,32 @@ const measureRail = (): void => {
   const r = codeRail.getBoundingClientRect();
   stage.railX = (r.left + r.width / 2) / (root.clientWidth || innerWidth);
 };
-const layout = (): void => {
-  if (!reduced) story.style.height = `${Math.round((storyLength + 1) * vh)}px`;
+// Where the story and the closing section sit, measured when the layout changes rather than every frame.
+const geometry = { storyTop: 0, storyEnd: 0, ctaTop: 0, ctaHeight: 0 };
+const measure = (): void => {
+  geometry.storyTop = story.offsetTop;
+  geometry.storyEnd = story.offsetTop + story.offsetHeight;
+  geometry.ctaTop = cta.offsetTop;
+  geometry.ctaHeight = cta.offsetHeight;
   measureRail();
 };
+const layout = (): void => {
+  if (!reduced) story.style.height = `${Math.round((storyLength + 1) * vh)}px`;
+  measure();
+};
 layout();
+new ResizeObserver(measure).observe(document.body);
 addEventListener("resize", () => {
   // Mobile browsers resize the viewport as their toolbars come and go; only a real change re-lays the story.
   if (innerWidth !== vw || Math.abs(innerHeight - vh) > 140) {
     vw = innerWidth;
     vh = innerHeight;
     layout();
-  } else measureRail();
+  } else measure();
 });
 
 const beatAt = (y: number): number => {
-  const top = story.offsetTop;
+  const top = geometry.storyTop;
   if (y <= top) return top > 0 ? y / top : 1;
   let v = (y - top) / vh;
   for (const [a, b, length] of SEGMENTS) {
@@ -210,19 +220,34 @@ const estimatedHead = (): ScreenPoint =>
   innerWidth / innerHeight < 0.8 ? { x: 0.36, y: 0.76 } : { x: 0.54, y: 0.68 };
 
 // ---- Frame ----
+// Styles written every frame go through here, so an unchanged value does not dirty the page's style.
+const written = new WeakMap<HTMLElement, Map<string, string>>();
+const write = (el: HTMLElement, property: string, value: string): void => {
+  let values = written.get(el);
+  if (!values) {
+    values = new Map();
+    written.set(el, values);
+  }
+  if (values.get(property) === value) return;
+  values.set(property, value);
+  el.style.setProperty(property, value);
+};
+
 let shown = "";
 let target = 0;
+let beatSpeed = 0;
+const FOLLOW = 8; // how tightly the story follows the scroll, per second
+const STEP = 1 / 120;
 let last = performance.now();
 
 const read = (): number => {
   const y = scrollY;
   target = reduced ? 0 : beatAt(y);
-  const storyEnd = story.offsetTop + story.offsetHeight;
-  const r = cta.getBoundingClientRect();
-  const ctaInView = r.top < innerHeight && r.bottom > 0;
-  stage.mode = y < storyEnd ? "story" : ctaInView ? "cta" : "off";
-  stage.ctaProgress = clamp((innerHeight - r.top) / (innerHeight + r.height));
-  stage.ctaTop = r.top / innerHeight;
+  const ctaTop = geometry.ctaTop - y;
+  const ctaInView = ctaTop < innerHeight && ctaTop + geometry.ctaHeight > 0;
+  stage.mode = y < geometry.storyEnd ? "story" : ctaInView ? "cta" : "off";
+  stage.ctaProgress = clamp((innerHeight - ctaTop) / (innerHeight + geometry.ctaHeight));
+  stage.ctaTop = ctaTop / innerHeight;
   return y;
 };
 
@@ -231,14 +256,22 @@ const frame = (now: number): void => {
   last = now;
   stage.time += dt;
   const y = read();
-  stage.beat += (target - stage.beat) * (1 - Math.exp(-dt * 4.5));
-  if (Math.abs(target - stage.beat) < 1e-4) stage.beat = target;
+  // A critically damped spring toward the scroll: the story never jumps, and neither does its speed.
+  for (let left = dt; left > 0; left -= STEP) {
+    const h = Math.min(left, STEP);
+    beatSpeed += (FOLLOW * FOLLOW * (target - stage.beat) - 2 * FOLLOW * beatSpeed) * h;
+    stage.beat += beatSpeed * h;
+  }
+  if (Math.abs(target - stage.beat) < 1e-4 && Math.abs(beatSpeed) < 1e-3) {
+    stage.beat = target;
+    beatSpeed = 0;
+  }
   const b = stage.beat;
 
   // The headline sinks into the scene as the story starts; the rest of the hero fades.
   if (y < innerHeight * 1.2) {
-    heroCopy.style.transform = `translate3d(0, ${(y * 0.32).toFixed(1)}px, 0)`;
-    heroFoot.style.opacity = (1 - clamp(y / (innerHeight * 0.4))).toFixed(3);
+    write(heroCopy, "transform", `translate3d(0, ${(y * 0.32).toFixed(1)}px, 0)`);
+    write(heroFoot, "opacity", (1 - clamp(y / (innerHeight * 0.4))).toFixed(3));
   }
   for (const c of captions) {
     const o = inWindow(b, c.a, c.z, 0.12);
@@ -252,14 +285,14 @@ const frame = (now: number): void => {
   railItems.forEach((li, i) => {
     const [a, z] = RAIL[i] ?? [0, 0];
     li.classList.toggle("on", b >= a && b < z);
-    li.style.setProperty("--progress", seg(b, a, z).toFixed(3));
+    write(li, "--progress", seg(b, a, z).toFixed(3));
   });
 
   // The hand-over: everything but the channel steps back.
   const handOver = stage.mode === "story" ? seg(b, 7.7, 7.88) : 0;
-  rail.style.opacity = (1 - handOver).toFixed(3);
-  if (scrim) scrim.style.opacity = (1 - handOver).toFixed(3);
-  if (vignette) vignette.style.opacity = (1 - 0.85 * handOver).toFixed(3);
+  write(rail, "opacity", (1 - handOver).toFixed(3));
+  if (scrim) write(scrim, "opacity", (1 - handOver).toFixed(3));
+  if (vignette) write(vignette, "opacity", (1 - 0.85 * handOver).toFixed(3));
 
   intro.tick(now, scene?.headOnScreen() ?? estimatedHead());
   const r = readoutAt(b);
@@ -271,13 +304,13 @@ const frame = (now: number): void => {
     hudSub.textContent = r.sub;
   }
   hud.classList.toggle("large", r.large && stage.mode === "story");
-  hudBar.style.transform = `translateX(${((-(HEAD - r.position) / HEAD) * 240).toFixed(1)}px)`;
+  write(hudBar, "transform", `translateX(${((-(HEAD - r.position) / HEAD) * 240).toFixed(1)}px)`);
   let hudOpacity = stage.mode === "story" ? 1 - seg(b, 7.68, 7.8) : 0;
   if (innerWidth < 760) hudOpacity *= seg(b, 0.55, 0.85);
   hudOpacity *= intro.presence(now);
-  hud.style.opacity = hudOpacity.toFixed(3);
-  callouts.style.visibility = stage.mode === "story" ? "visible" : "hidden";
-  canvas.style.visibility = stage.mode === "off" ? "hidden" : "visible";
+  write(hud, "opacity", hudOpacity.toFixed(3));
+  write(callouts, "visibility", stage.mode === "story" ? "visible" : "hidden");
+  write(canvas, "visibility", stage.mode === "off" ? "hidden" : "visible");
 
   scene?.frame();
   requestAnimationFrame(frame);
