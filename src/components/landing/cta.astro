@@ -96,9 +96,7 @@ import Install from "../install.astro";
     }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .cta {
-      background: var(--bg);
-    }
+  :global(.still) .cta {
+    background: var(--bg);
   }
 </style>

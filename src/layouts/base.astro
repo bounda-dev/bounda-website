@@ -18,7 +18,7 @@ const socialImageAlt = "The Bounda symbol as a machined monolith whose foot beco
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" class="still">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -54,9 +54,11 @@ const socialImageAlt = "The Bounda symbol as a machined monolith whose foot beco
     <!-- The scroll position drives the story, so a reload starts it from the top. -->
     <script is:inline>if ("scrollRestoration" in history) history.scrollRestoration = "manual";</script>
 
-    <!-- A mode the visitor chose wins over the system's, applied before first paint. -->
+    <!-- The page is static (.still) until this runs: without JavaScript, or with reduced motion, it
+         stays a plain page. A mode the visitor chose wins over the system's. Both before first paint. -->
     <script is:inline>
       (function () {
+        if (!matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.classList.remove("still");
         try {
           var t = localStorage.getItem("theme");
           if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);

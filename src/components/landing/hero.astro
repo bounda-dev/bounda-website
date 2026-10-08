@@ -101,6 +101,11 @@ import Install from "../install.astro";
     padding-bottom: clamp(26px, 6vh, 60px);
   }
 
+  /* The script fades the foot as the story starts; whatever has focus in it stays in sight. */
+  .foot:focus-within {
+    opacity: 1 !important;
+  }
+
   .lead {
     margin: 0;
     max-width: 30rem;

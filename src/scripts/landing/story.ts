@@ -293,7 +293,8 @@ const frame = (now: number): void => {
   hud.classList.toggle("large", r.large && stage.mode === "story");
   write(hudBar, "transform", `translateX(${((-(HEAD - r.position) / HEAD) * 240).toFixed(1)}px)`);
   let hudOpacity = stage.mode === "story" ? 1 : 0;
-  if (innerWidth < 760) hudOpacity *= seg(b, 0.55, 0.85);
+  // Below the wide layout the hero's actions sit where the readout is, so it waits for the story.
+  if (innerWidth <= 1100) hudOpacity *= seg(b, 0.55, 0.85);
   hudOpacity *= intro.presence(now);
   write(hud, "opacity", hudOpacity.toFixed(3));
   write(callouts, "visibility", stage.mode === "story" ? "visible" : "hidden");

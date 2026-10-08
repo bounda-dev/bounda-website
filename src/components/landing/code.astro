@@ -244,9 +244,7 @@ export const project = async ({ event, table }: Projection.Args) => {
     }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .rail {
-      display: none;
-    }
+  :global(.still) .rail {
+    display: none;
   }
 </style>

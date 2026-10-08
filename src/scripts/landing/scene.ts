@@ -593,7 +593,14 @@ export const startScene = async ({
     atlas.needsUpdate = true;
   };
   drawAtlas();
-  document.fonts?.load(atlasFont).then(drawAtlas, () => undefined);
+  let stillShown = false; // set by still(), so the still is redrawn once the engraving font arrives
+  document.fonts?.load(atlasFont).then(
+    () => {
+      drawAtlas();
+      if (stillShown) still();
+    },
+    () => undefined,
+  );
   const labelGeometry = new THREE.PlaneGeometry(0.46, 0.115);
   const cells = new THREE.InstancedBufferAttribute(new Float32Array(MAJORS.length * 4), 2);
   MAJORS.forEach((_, k) => {
@@ -1077,6 +1084,8 @@ export const startScene = async ({
       viewport.h,
     );
     camera.updateProjectionMatrix();
+    // lookAt leaves the world matrix a frame behind; the callouts project with this frame's camera.
+    camera.updateMatrixWorld();
   };
   const resize = (): void => {
     const w = canvas.clientWidth || innerWidth;
@@ -1372,16 +1381,19 @@ export const startScene = async ({
     camPosition.y += Math.sin(time * 0.17 + 1.3) * 0.05 * amount;
   };
 
-  // Every 60 frames: if more than a fifth ran over 20 ms, a quarter step less resolution, down to 1.
+  // Every 60 frames: if more than a fifth ran long (over 20 ms, or half again the display's own
+  // interval when it is capped lower, as in low-power mode), a quarter step less resolution, down to 1.
   let lastFrameAt = 0;
   let sampled = 0;
   let slow = 0;
+  let shortest = Number.POSITIVE_INFINITY; // the display's own pace, as observed
   const adapt = (now: number): void => {
     const dt = now - lastFrameAt;
     lastFrameAt = now;
     if (dt > 250 || pixelRatio <= 1) return; // a gap (the tab was away), or nothing left to give
+    shortest = Math.min(shortest, dt);
     sampled++;
-    if (dt > 20) slow++;
+    if (dt > Math.max(20, shortest * 1.45)) slow++;
     if (sampled < 60) return;
     if (slow > 12) {
       pixelRatio = Math.max(1, pixelRatio - 0.25);
@@ -1443,6 +1455,7 @@ export const startScene = async ({
     applyCamera();
     shadowsMoved = true;
     render(0);
+    stillShown = true;
   };
 
   // Compile every program before the first frame, hidden objects included, so the scene neither

@@ -223,52 +223,50 @@
     }
   }
 
-  /* Reduced motion: no pinning, the captions read as a grid. */
-  @media (prefers-reduced-motion: reduce) {
-    .story {
-      height: auto;
-      z-index: 5;
-      background: var(--bg);
-      border-top: 1px solid var(--rule);
-    }
+  /* A still page: no pinning, the captions read as a grid. */
+  :global(.still) .story {
+    height: auto;
+    z-index: 5;
+    background: var(--bg);
+    border-top: 1px solid var(--rule);
+  }
 
-    .pin {
-      position: relative;
-      height: auto;
-      padding: 80px 0;
-    }
+  :global(.still) .pin {
+    position: relative;
+    height: auto;
+    padding: 80px 0;
+  }
 
-    .scrim,
-    .rail {
-      display: none;
-    }
+  :global(.still) .scrim,
+  :global(.still) .rail {
+    display: none;
+  }
 
-    .captions {
-      position: relative;
-      left: auto;
-      top: auto;
-      bottom: auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 48px 36px;
-      width: auto;
-      height: auto;
-      max-width: var(--max-width);
-      margin: 0 auto;
-      padding: 0 var(--gutter);
-      transform: none;
-    }
+  :global(.still) .captions {
+    position: relative;
+    left: auto;
+    top: auto;
+    bottom: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 48px 36px;
+    width: auto;
+    height: auto;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 var(--gutter);
+    transform: none;
+  }
 
-    .caption {
-      position: relative;
-      opacity: 1;
-      pointer-events: auto;
-      padding-top: 22px;
-      border-top: 1px solid var(--rule);
-    }
+  :global(.still) .caption {
+    position: relative;
+    opacity: 1;
+    pointer-events: auto;
+    padding-top: 22px;
+    border-top: 1px solid var(--rule);
+  }
 
-    .caption h2 {
-      font-size: clamp(1.45rem, 1rem + 1vw, 2rem);
-    }
+  :global(.still) .caption h2 {
+    font-size: clamp(1.45rem, 1rem + 1vw, 2rem);
   }
 </style>

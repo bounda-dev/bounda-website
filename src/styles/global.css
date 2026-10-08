@@ -158,10 +158,9 @@ h3 {
     transform 0.9s var(--ease) var(--enter-delay, 0s);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  [data-reveal] {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
+/* A still page (no JavaScript, or reduced motion; see base.astro) shows everything in place. */
+.still [data-reveal] {
+  opacity: 1;
+  transform: none;
+  transition: none;
 }

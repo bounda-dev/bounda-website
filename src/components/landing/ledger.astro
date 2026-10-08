@@ -224,12 +224,10 @@ const entries: readonly Entry[] = [
     }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    tbody tr {
-      opacity: 1;
-      transform: none;
-      transition: none;
-    }
+  :global(.still) tbody tr {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 </style>
 

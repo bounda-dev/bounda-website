@@ -42,7 +42,15 @@ const SEEN = "bounda-intro";
 
 const easeOut = (t: number): number => 1 - (1 - t) ** 3;
 
+declare global {
+  interface Window {
+    /** The inline script's timer that shows the hero if this module never runs. */
+    boundaIntroFallback?: number;
+  }
+}
+
 export const createIntro = ({ root, stream, count, ready }: IntroArgs): Intro => {
+  clearTimeout(window.boundaIntroFallback);
   if (!root.classList.contains("intro")) {
     return { tick: () => false, revealed: Promise.resolve(), presence: () => 1 };
   }
@@ -96,14 +104,17 @@ export const createIntro = ({ root, stream, count, ready }: IntroArgs): Intro =>
   const draw = (fraction: number, head: ScreenPoint): void => {
     headX = headX < 0 ? head.x : headX + (head.x - headX) * 0.2;
     headY = headY < 0 ? head.y : headY + (head.y - headY) * 0.2;
-    const x = fraction * headX * innerWidth;
+    // The stream's box is the canvas's, so fractions of the scene map onto it exactly.
+    const width = stream.clientWidth || innerWidth;
+    const height = stream.clientHeight || innerHeight;
+    const x = fraction * headX * width;
     stream.style.setProperty("--head-x", `${x.toFixed(1)}px`);
     // The position flies from the cursor like a flag, kept inside the page's margins.
-    const gutter = Math.min(64, Math.max(16, innerWidth * 0.04));
-    const width = count.parentElement?.offsetWidth ?? 0;
-    const flag = Math.max(gutter, Math.min(x + 12, innerWidth - gutter - width));
+    const gutter = Math.min(64, Math.max(16, width * 0.04));
+    const flagWidth = count.parentElement?.offsetWidth ?? 0;
+    const flag = Math.max(gutter, Math.min(x + 12, width - gutter - flagWidth));
     stream.style.setProperty("--count-x", `${flag.toFixed(1)}px`);
-    stream.style.setProperty("--head-y", `${(headY * innerHeight).toFixed(1)}px`);
+    stream.style.setProperty("--head-y", `${(headY * height).toFixed(1)}px`);
     const value = formatPosition(1 + (HEAD - 2) * fraction);
     if (value !== shown) {
       shown = value;
