@@ -44,7 +44,6 @@ const byId = <T extends HTMLElement>(id: string): T => {
 
 const story = byId("story");
 const cta = byId("cta");
-const codeRail = byId("code-rail");
 const heroCopy = byId("hero-copy");
 const heroFoot = byId("hero-foot");
 const hud = byId("hud");
@@ -55,8 +54,6 @@ const hudBar = byId("hud-bar");
 const callouts = byId("callouts");
 const canvas = byId<HTMLCanvasElement>("stage-canvas");
 const rail = byId("rail");
-const scrim = story.querySelector<HTMLElement>(".scrim");
-const vignette = document.querySelector<HTMLElement>(".vignette");
 const railItems = [...rail.querySelectorAll<HTMLElement>("li")];
 const RAIL = [
   [0.62, 1.6],
@@ -64,7 +61,7 @@ const RAIL = [
   [2.55, 3.42],
   [3.42, 4.3],
   [4.3, 5.18],
-  [5.18, 7.82],
+  [5.18, 8],
 ] as const;
 const captions = [...story.querySelectorAll<HTMLElement>("[data-window]")].map((el) => {
   const [a = 0, z = 0] = (el.dataset.window ?? "").split(",").map(Number);
@@ -78,7 +75,6 @@ const stage: Stage = {
   time: 0,
   ctaProgress: 0,
   ctaTop: 1,
-  railX: 0.07,
 };
 onThemeChange((theme) => {
   stage.theme = theme;
@@ -88,10 +84,6 @@ onThemeChange((theme) => {
 let vh = innerHeight;
 let vw = innerWidth;
 const storyLength = SEGMENTS.reduce((sum, [, , length]) => sum + length, 0);
-const measureRail = (): void => {
-  const r = codeRail.getBoundingClientRect();
-  stage.railX = (r.left + r.width / 2) / (root.clientWidth || innerWidth);
-};
 // Where the story and the closing section sit, measured when the layout changes rather than every frame.
 const geometry = { storyTop: 0, storyEnd: 0, ctaTop: 0, ctaHeight: 0 };
 const measure = (): void => {
@@ -99,7 +91,6 @@ const measure = (): void => {
   geometry.storyEnd = story.offsetTop + story.offsetHeight;
   geometry.ctaTop = cta.offsetTop;
   geometry.ctaHeight = cta.offsetHeight;
-  measureRail();
 };
 const layout = (): void => {
   if (!reduced) story.style.height = `${Math.round((storyLength + 1) * vh)}px`;
@@ -288,11 +279,6 @@ const frame = (now: number): void => {
     write(li, "--progress", seg(b, a, z).toFixed(3));
   });
 
-  // The hand-over: everything but the channel steps back.
-  const handOver = stage.mode === "story" ? seg(b, 7.7, 7.88) : 0;
-  write(rail, "opacity", (1 - handOver).toFixed(3));
-  if (scrim) write(scrim, "opacity", (1 - handOver).toFixed(3));
-  if (vignette) write(vignette, "opacity", (1 - 0.85 * handOver).toFixed(3));
 
   intro.tick(now, scene?.headOnScreen() ?? estimatedHead());
   const r = readoutAt(b);
@@ -305,7 +291,7 @@ const frame = (now: number): void => {
   }
   hud.classList.toggle("large", r.large && stage.mode === "story");
   write(hudBar, "transform", `translateX(${((-(HEAD - r.position) / HEAD) * 240).toFixed(1)}px)`);
-  let hudOpacity = stage.mode === "story" ? 1 - seg(b, 7.68, 7.8) : 0;
+  let hudOpacity = stage.mode === "story" ? 1 : 0;
   if (innerWidth < 760) hudOpacity *= seg(b, 0.55, 0.85);
   hudOpacity *= intro.presence(now);
   write(hud, "opacity", hudOpacity.toFixed(3));

@@ -1,6 +1,6 @@
 // The story is a single number, the beat: 0 hero, 1 command, 2 event, 3 fold, 4 projection,
-// 5 query, then the rebuild (REWIND to position 1, replay from 6 to 7), 7.6 rest, 8 the hand-over
-// to the code section. Scroll maps to the beat; the captions, the readout and the scene read it.
+// 5 query, then the rebuild (REWIND to position 1, replay from 6 to 7), and the rest at 7.6, where
+// the page scrolls on. Scroll maps to the beat; the captions, the readout and the scene read it.
 
 import type { Theme } from "../theme";
 
@@ -46,7 +46,7 @@ export const FOLD: readonly FoldStep[] = [
 ];
 export const FOLD_AT = [2.6, 2.82, 3.04] as const;
 export const REWIND = [5.55, 5.95] as const;
-export const END = 8;
+export const END = 7.6;
 
 /** [from beat, to beat, viewport heights of scroll it takes] */
 export const SEGMENTS: readonly (readonly [number, number, number])[] = [
@@ -58,8 +58,6 @@ export const SEGMENTS: readonly (readonly [number, number, number])[] = [
   [5.6, 6, 0.4],
   [6, 7, 0.8],
   [7, 7.6, 0.4],
-  [7.6, 7.72, 0.16],
-  [7.72, 8, 0.3],
 ];
 
 /** Replay progress over the stream, slightly eased so it lingers at both ends. */
@@ -83,6 +81,4 @@ export interface Stage {
   ctaProgress: number;
   /** The closing section's top edge, in viewport heights. */
   ctaTop: number;
-  /** Horizontal centre of the code section's rail, as a fraction of the viewport width. */
-  railX: number;
 }

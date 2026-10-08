@@ -910,6 +910,7 @@ export const startScene = async ({
     scene.environment = studio(theme);
     fog.color.setHex(look.fog);
     key.color.setHex(look.keyColor);
+    key.intensity = look.key;
     readingLight.color.copy(accent);
     for (const m of [faces, sides]) {
       m.clearcoat = look.glyph.clearcoat;
@@ -959,7 +960,6 @@ export const startScene = async ({
 
   // ---- Camera ----
   // b: beat, p: position, t: target, f: field of view, s: frame shift as a fraction of the viewport.
-  // `log` keys dolly so the distance shrinks geometrically.
   interface Pose {
     readonly p: readonly [number, number, number];
     readonly t: readonly [number, number, number];
@@ -968,12 +968,9 @@ export const startScene = async ({
   }
   interface Key extends Pose {
     readonly b: number;
-    readonly log?: boolean;
     readonly portrait?: Pose;
   }
   const SIDE: readonly [number, number] = [0.22, 0.06]; // keeps the object right of the caption column
-  const channelCentre = v3(0, CHANNEL_BASE + CHANNEL_HEIGHT / 2, FRONT);
-  let handOverShift: readonly [number, number] = [-0.43, 0];
   const keys = (): readonly Key[] => [
     {
       b: 0,
@@ -1007,36 +1004,10 @@ export const startScene = async ({
       s: [0.18, 0.06],
       portrait: { p: [HEAD - 4.4, 2.4, -3.4], t: [ROW_X + 0.6, rowY(3), 0], f: 52, s: [0, -0.06] },
     },
+    // From behind the rows back to the front, in an arc around the object rather than through it.
+    { b: 7.15, p: [5.0, 4.8, -7.5], t: [1.0, 1.7, 0], f: 36, s: SIDE },
+    { b: 7.32, p: [10.0, 4.4, 3.2], t: [0.4, 1.6, 0], f: 32, s: SIDE },
     { b: 7.6, p: [5.8, 2.9, 13.4], t: [-0.1, 1.5, 0], f: 30, s: SIDE },
-    { b: 7.72, p: [5.6, 2.85, 13.0], t: [-0.1, 1.5, 0], f: 30, s: SIDE },
-    // The hand-over: close in on the channel until it is the code section's rail.
-    {
-      b: 7.86,
-      p: [0, channelCentre.y, FRONT + 2.4],
-      t: [0, channelCentre.y, FRONT],
-      f: 30,
-      s: handOverShift,
-      portrait: {
-        p: [0, channelCentre.y, FRONT + 2.4],
-        t: [0, channelCentre.y, FRONT],
-        f: 30,
-        s: handOverShift,
-      },
-    },
-    {
-      b: 8,
-      p: [0, channelCentre.y, FRONT + 0.3],
-      t: [0, channelCentre.y, FRONT],
-      f: 30,
-      s: handOverShift,
-      log: true,
-      portrait: {
-        p: [0, channelCentre.y, FRONT + 0.3],
-        t: [0, channelCentre.y, FRONT],
-        f: 30,
-        s: handOverShift,
-      },
-    },
   ];
   const CTA: Pose & { readonly portrait: Pose } = {
     p: [6.2, 1.25, 10.4],
@@ -1047,7 +1018,7 @@ export const startScene = async ({
   };
   // On a tall screen a key without its own portrait pose pulls back and widens.
   const portraitOf = (k: Key): Key => {
-    if (k.portrait) return { ...k.portrait, b: k.b, log: k.log };
+    if (k.portrait) return { ...k.portrait, b: k.b };
     const p = k.p.map((v, i) => (k.t[i] ?? 0) + (v - (k.t[i] ?? 0)) * 1.8) as unknown as readonly [
       number,
       number,
@@ -1063,6 +1034,7 @@ export const startScene = async ({
   let frameShift: readonly [number, number] = [0, 0];
   // The camera passes through every key without stopping at it: each pose component follows a
   // monotone cubic through the keys, so its speed is continuous and it never overshoots a framing.
+  // The story ends on the last key; past it the page scrolls on over the scene.
   const componentsOf = (k: Pose): readonly number[] => [k.p[0], k.p[1], k.p[2], k.t[0], k.t[1], k.t[2], k.f, k.s[0], k.s[1]];
   let path: { beats: number[]; values: number[][]; slopes: number[][] } = { beats: [], values: [], slopes: [] };
   const fitPath = (): void => {
@@ -1085,18 +1057,6 @@ export const startScene = async ({
     const A = poses[i];
     const Z = poses[i + 1];
     if (!A || !Z) return;
-    if (Z.log) {
-      // The hand-over: the distance to the channel shrinks geometrically, a constant apparent speed in.
-      const f = ease5(clamp((b - A.b) / (Z.b - A.b)));
-      const dA = Math.hypot(A.p[0] - A.t[0], A.p[1] - A.t[1], A.p[2] - A.t[2]);
-      const dZ = Math.hypot(Z.p[0] - Z.t[0], Z.p[1] - Z.t[1], Z.p[2] - Z.t[2]);
-      const fp = (dA - dA * (dZ / dA) ** seg(b, A.b, Z.b)) / (dA - dZ);
-      camPosition.set(lerp(A.p[0], Z.p[0], fp), lerp(A.p[1], Z.p[1], fp), lerp(A.p[2], Z.p[2], fp));
-      camTarget.set(lerp(A.t[0], Z.t[0], f), lerp(A.t[1], Z.t[1], f), lerp(A.t[2], Z.t[2], f));
-      camera.fov = lerp(A.f, Z.f, f);
-      frameShift = [lerp(A.s[0], Z.s[0], f), lerp(A.s[1], Z.s[1], f)];
-      return;
-    }
     const span = Z.b - A.b;
     const t = clamp((b - A.b) / span);
     const v = (component: number): number => along(component, i, t, span);
@@ -1126,8 +1086,6 @@ export const startScene = async ({
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     portrait = w / h < 0.8;
-    // The hand-over lands the channel exactly on the code section's rail.
-    handOverShift = [stage.railX - 0.5, 0];
     poses = portrait ? keys().map(portraitOf) : keys();
     fitPath();
   };
@@ -1206,20 +1164,16 @@ export const startScene = async ({
       level = (2 / 3) * (1 - ease(seg(b, 2.5, 2.6)));
       for (const at of FOLD_AT) level += ease5(seg(b, at + 0.12, at + 0.2)) / 3;
       intensity = 1;
-    } else if (b >= 3.4 && b < 7.6) intensity = lerp(1, 0.45, seg(b, 3.4, 3.9));
-    if (b >= 7.6) intensity = lerp(0.45, 1, seg(b, 7.65, 7.9));
-    const handOver = seg(b, 7.72, 7.9);
-    faces.roughness = look.glyph.roughness * (1 + 0.9 * handOver);
+    } else if (b >= 3.4) intensity = lerp(1, 0.45, seg(b, 3.4, 3.9));
     fill.scale.set(1, Math.max(0.0001, level), 1);
-    groove.scale.x = 1;
     fill.visible = halo.visible = level > 0.002;
     fillMaterial.color.copy(accent).multiplyScalar(0.55 + intensity * 0.75);
     halo.scale.set(1, Math.max(0.0001, level), 1);
     haloMaterial.opacity =
-      (0.18 + 0.32 * intensity) * (1 - 0.4 * handOver) * (look.additive ? 1 : 0.5);
+      (0.18 + 0.32 * intensity) * (look.additive ? 1 : 0.5);
     fillTip.position.set(0, CHANNEL_BASE + CHANNEL_HEIGHT * level, FRONT + 0.03);
     fillTip.material.opacity =
-      level > 0.01 ? (0.25 + intensity * 0.6) * (1 - handOver) * (look.additive ? 1 : 0.45) : 0;
+      level > 0.01 ? (0.25 + intensity * 0.6) * (look.additive ? 1 : 0.45) : 0;
 
     // The read model's rows
     for (let r = 0; r < ROWS; r++) {
@@ -1236,7 +1190,6 @@ export const startScene = async ({
         g = present > 0 ? 1.3 * (1 - seg(f, (r + 0.9) / 8, (r + 2.2) / 8)) : 0;
         if (b > 7) g *= 1 - seg(b, 7, 7.5);
       }
-      if (b > 7.74) present *= 1 - seg(b, 7.74, 7.84);
       for (let c = 0; c < 3; c++) {
         const i = r * 3 + c;
         const grown = ease(clamp(present * 3 - c * 0.9));
@@ -1321,7 +1274,7 @@ export const startScene = async ({
         ? 1
         : b < 1
           ? 1 - seg(b, 0.25, 0.7)
-          : seg(b, 7.25, 7.6) * (1 - seg(b, 7.6, 7.8));
+          : seg(b, 7.25, 7.6);
       if (idleWeight > 0) {
         const cycle = (time % 7) / 7;
         x = lerp(HEAD - 20, HEAD + 0.05, ease(seg(cycle, 0.05, 0.8)));
@@ -1341,8 +1294,6 @@ export const startScene = async ({
 
     // During the rebuild the far end stays visible, and the mirrored plates stop smearing under the rod.
     const far = inWindow(b, 5.35, 7.25, 0.2);
-    scene.environmentIntensity = 1 - 0.88 * seg(b, 7.62, 7.95);
-    key.intensity = look.key * (1 - 0.6 * seg(b, 7.7, 7.95));
     fog.near = lerp(10, 16, far);
     fog.far = lerp(40, 120, far);
     plateReflection.opacity = look.reflection[1] * (1 - 0.8 * inWindow(b, 5.7, 7.25, 0.15));
@@ -1377,7 +1328,7 @@ export const startScene = async ({
     ["read-model", 3.75, 5.08, (v) => v.set(ROW_END, rowY(6) + 0.06, 0)],
     ["query", 4.32, 5.05, (v) => v.copy(QUERY_FROM)],
     ["origin", 5.92, 6.22, (v) => v.set(U.cursor.value, ROD_Y + 0.26, 0)],
-    ["rebuilt", 7.3, 7.66, (v) => v.set(ROW_END, rowY(6) + 0.06, 0)],
+    ["rebuilt", 7.3, 8, (v) => v.set(ROW_END, rowY(6) + 0.06, 0)],
   ];
   const placeCallouts = (b: number): void => {
     const step = FOLD[foldStep];
@@ -1479,18 +1430,6 @@ export const startScene = async ({
       pose(b);
       drift(time, 1 - seg(b, 0, 0.3));
       applyCamera();
-      if (b > 7.72) {
-        // Hold the channel at the rail's width while the camera closes in.
-        const pixelsPerUnit =
-          viewport.h /
-          (2 *
-            Math.max(0.05, camPosition.distanceTo(channelCentre)) *
-            Math.tan((camera.fov * Math.PI) / 360));
-        const k = ease(seg(b, 7.74, 7.9));
-        fill.scale.x = lerp(1, Math.min(1, 2.2 / (0.016 * pixelsPerUnit)), k);
-        groove.scale.x = lerp(1, Math.min(1, 10 / (0.034 * pixelsPerUnit)), k);
-        halo.scale.x = lerp(1, Math.min(1, 30 / (0.3 * pixelsPerUnit)), k);
-      }
       placeCallouts(b);
     }
     render(stage.mode === "cta" ? 7.6 : stage.beat);
