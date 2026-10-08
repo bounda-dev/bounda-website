@@ -58,6 +58,7 @@ Self-hosted from Google Fonts at build time (Astro's font API, which also genera
 - **Minimum size:** lockup 16px tall; symbol 12px. Favicons use the pixel cuts (32px: bar 5, foot 3; 16px: bar 3, foot 2, tail 2).
 - **Color:** `--text` on `--bg`. The lockup is never ochre; the symbol alone may be ochre when it closes something (see below).
 - **Don't:** stretch, outline, add effects, set the wordmark in a font, or build the mark as a landmark in a scene.
+- **Files:** `brand/` holds the lockup and the symbol in `currentColor`, on Bone and on Basalt, and the app icon as SVG and as a 1024px PNG. The site's favicons are in `public/`.
 
 ## The ⅃ as a device
 
@@ -98,6 +99,16 @@ How every table of facts is set, in docs, on the landing page and in Studio:
 - Corners square (radius 2px). Structure by hairlines (`--rule`), not by shadows.
 - 4px spacing grid; 12 columns; gutter `clamp(16px, 4vw, 64px)`; max width 1312px.
 - Content-led hero, not a full-viewport splash by default.
+
+## The landing page
+
+It is not a marketing website. It answers what Bounda is and why; anything about how belongs in the docs.
+
+- **Content, in order:** what Bounda is, in one sentence; what problem it solves (CQRS and event sourcing in TypeScript done right); how it works, as the story the scene tells (command, event, fold, projection, query, rebuild); what the code looks like; who it is for (senior engineers, backend-minded developers); why it exists (DX and correctness); how to start (`npm create bounda@latest`, GitHub).
+- **One scene, one accent, at most three annotations on screen.** Light in the scene means something; no decorative glows, particles or neon.
+- **No metaphors, no "enterprise transformation" language, no exaggerated claims.** Say how stable it is: before 1.0, a minor release can change the API.
+- **Nothing depends on the 3D.** The page reads before the scene loads; without WebGL a drawing stands in, and with reduced motion the story is a still and a grid.
+- **Inspirations, by feeling and not by copying:** Vercel (clarity, spacing), Resend (confidence, restraint), Linear (focus, calm UI), EventStoreDB's docs (technical seriousness), and scroll-driven product films (one manufactured object that plays its own mechanism as you scroll).
 
 ## Voice
 
