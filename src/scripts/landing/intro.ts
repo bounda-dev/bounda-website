@@ -1,44 +1,49 @@
-// The intro: before the hero enters, the page catches up with the global stream. The readout counts
-// from position 1 to the head while the scene and the fonts load, then the hero enters in order and
-// the canvas lights up. Shown once per session, skipped by any input; the `intro` class is set
-// before first paint by the inline script in stage.astro, which also leaves it out for reduced motion.
+// The intro: before the hero enters, the page catches up with the global stream. A ruler of events
+// draws itself from the left edge to the point where the scene's stream has its head, the position
+// riding above it from 000 001 to the head, while the scene and the fonts load. Then the ruler gives
+// way to the scene in the same place and the hero enters in order. Shown once per session, skipped
+// by any input; the `intro` class is set before first paint by the inline script in stage.astro,
+// which also leaves it out for reduced motion.
 
 import { formatPosition, HEAD } from "./timeline";
 
-export interface IntroReadout {
-  readonly key: string;
-  readonly value: string;
-  readonly sub: string;
-  readonly position: number;
+/** A point on the viewport, as fractions of its width and height. */
+export interface ScreenPoint {
+  readonly x: number;
+  readonly y: number;
 }
 
 export interface Intro {
-  /** What the readout shows at `now` while the page catches up; null once the hero has entered. */
-  readonly readout: (now: number) => IntroReadout | null;
+  /** Draws the intro at `now`, its ruler ending at `head`; false once the hero has entered, or with no intro. */
+  readonly tick: (now: number, head: ScreenPoint) => boolean;
   /** Resolves when the hero starts to enter (at once when there is no intro). */
   readonly revealed: Promise<void>;
-  /** 1 as the hero starts to enter, down to 0 over the hand-over, so the readout can fade with it. */
-  readonly afterglow: (now: number) => number;
+  /** How far the page's own chrome is back: 0 during the intro, rising to 1 as the hero enters. */
+  readonly presence: (now: number) => number;
 }
 
 export interface IntroArgs {
   readonly root: HTMLElement;
+  /** The ruler and the position riding it. */
+  readonly stream: HTMLElement;
+  readonly count: HTMLElement;
   /** Settles when the scene is drawn, or has failed, or will not load. */
   readonly ready: Promise<unknown>;
 }
 
-const COUNT_MS = 1200; // the count to the head, when everything is ready in time
-const FINISH_MS = 220; // the last stretch once it is
+const COUNT_MS = 1400; // the count to the head, when everything is ready in time
+const FINISH_MS = 260; // the last stretch once it is
 const GIVE_UP_MS = 3500; // past this the hero enters anyway; the scene fades in when it arrives
 const ENTER_MS = 1700; // the longest enter transition, delays included
-const AFTERGLOW_MS = 500; // gone before the install command enters
+const PRESENCE_MS = 600;
 const SEEN = "bounda-intro";
 
 const easeOut = (t: number): number => 1 - (1 - t) ** 3;
 
-export const createIntro = ({ root, ready }: IntroArgs): Intro => {
-  if (!root.classList.contains("intro"))
-    return { readout: () => null, revealed: Promise.resolve(), afterglow: () => 0 };
+export const createIntro = ({ root, stream, count, ready }: IntroArgs): Intro => {
+  if (!root.classList.contains("intro")) {
+    return { tick: () => false, revealed: Promise.resolve(), presence: () => 1 };
+  }
 
   const start = performance.now();
   let settled = false;
@@ -77,41 +82,59 @@ export const createIntro = ({ root, ready }: IntroArgs): Intro => {
     reveal();
   };
 
-  const at = (fraction: number): IntroReadout => {
-    const position = Math.round(1 + (HEAD - 2) * fraction);
-    return {
-      key: "Global stream · catching up",
-      value: formatPosition(position),
-      sub: "from position 1",
-      position,
-    };
+  // Where the ruler ends follows the scene's head smoothly, from an estimate until the scene reports it.
+  let headX = -1;
+  let headY = -1;
+  let shown = "";
+  const draw = (fraction: number, head: ScreenPoint): void => {
+    headX = headX < 0 ? head.x : headX + (head.x - headX) * 0.2;
+    headY = headY < 0 ? head.y : headY + (head.y - headY) * 0.2;
+    const x = fraction * headX * innerWidth;
+    stream.style.setProperty("--head-x", `${x.toFixed(1)}px`);
+    // The position flies from the cursor like a flag, kept inside the page's margins.
+    const gutter = Math.min(64, Math.max(16, innerWidth * 0.04));
+    const width = count.parentElement?.offsetWidth ?? 0;
+    const flag = Math.max(gutter, Math.min(x + 12, innerWidth - gutter - width));
+    stream.style.setProperty("--count-x", `${flag.toFixed(1)}px`);
+    stream.style.setProperty("--head-y", `${(headY * innerHeight).toFixed(1)}px`);
+    const value = formatPosition(1 + (HEAD - 2) * fraction);
+    if (value !== shown) {
+      shown = value;
+      count.textContent = value;
+    }
+  };
+
+  // How much of the count is done: eased, held just short of the head while loading, then finished.
+  const progress = (now: number): number | null => {
+    const elapsed = now - start;
+    const counted = easeOut(Math.min(1, elapsed / COUNT_MS));
+    if (finishFrom === null) {
+      if (settled && elapsed >= COUNT_MS) finishFrom = now;
+      else
+        return Math.min(
+          counted,
+          0.97 + 0.02 * (1 - Math.exp(-Math.max(0, elapsed - COUNT_MS) / 2000)),
+        );
+    }
+    const t = Math.min(1, (now - finishFrom) / FINISH_MS);
+    if (t >= 1) return null;
+    const from = Math.min(counted, 0.99);
+    return from + (1 - from) * easeOut(t);
   };
 
   return {
     revealed,
-    afterglow: (now) => (enteredAt ? Math.max(0, 1 - (now - enteredAt) / AFTERGLOW_MS) : 0),
-    readout(now) {
-      if (finished) return null;
-      const elapsed = now - start;
-      const counted = easeOut(Math.min(1, elapsed / COUNT_MS));
-      if (finishFrom === null) {
-        if (settled && elapsed >= COUNT_MS) finishFrom = now;
-        // Still loading: hold just short of the head, creeping, so the count never stops dead.
-        else
-          return at(
-            Math.min(
-              counted,
-              0.97 + 0.02 * (1 - Math.exp(-Math.max(0, elapsed - COUNT_MS) / 2000)),
-            ),
-          );
-      }
-      const t = Math.min(1, (now - finishFrom) / FINISH_MS);
-      const from = Math.min(counted, 0.99);
-      if (t >= 1) {
+    presence: (now) => (enteredAt ? Math.min(1, (now - enteredAt) / PRESENCE_MS) : 0),
+    tick(now, head) {
+      if (finished) return false;
+      const fraction = progress(now);
+      if (fraction === null) {
+        draw(1, head);
         enter();
-        return null;
+        return false;
       }
-      return at(from + (1 - from) * easeOut(t));
+      draw(fraction, head);
+      return true;
     },
   };
 };

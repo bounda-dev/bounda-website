@@ -5,6 +5,7 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import type { Theme } from "../theme";
+import type { ScreenPoint } from "./intro";
 import {
   clamp,
   ease,
@@ -33,6 +34,8 @@ export interface SceneControls {
   readonly frame: () => void;
   /** Renders the hero once, for visitors who asked for reduced motion. */
   readonly still: () => void;
+  /** Where the head of the stream is on screen in the last frame drawn. */
+  readonly headOnScreen: () => ScreenPoint;
 }
 
 interface Finish {
@@ -1424,5 +1427,11 @@ export const startScene = async ({
   if (renderer.extensions.has("KHR_parallel_shader_compile")) await renderer.compileAsync(scene, camera);
   else renderer.compile(scene, camera);
 
-  return { frame, still };
+  const head = new THREE.Vector3();
+  const headOnScreen = (): ScreenPoint => {
+    head.set(HEAD, ROD_Y, 0).project(camera);
+    return { x: (head.x + 1) / 2, y: (1 - head.y) / 2 };
+  };
+
+  return { frame, still, headOnScreen };
 };

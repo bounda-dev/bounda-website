@@ -2,7 +2,7 @@
 // every frame to the 3D scene, which loads only where WebGL 2 is available.
 
 import { currentTheme, onThemeChange } from "../theme";
-import { createIntro } from "./intro";
+import { createIntro, type ScreenPoint } from "./intro";
 import {
   clamp,
   END,
@@ -23,6 +23,7 @@ import {
 interface Scene {
   readonly frame: () => void;
   readonly still: () => void;
+  readonly headOnScreen: () => ScreenPoint;
 }
 
 const webgl2 = (): boolean => {
@@ -198,7 +199,15 @@ let scene: Scene | null = null;
 const started: Promise<Scene | null> = loading
   ? loading.then(({ startScene }) => startScene({ canvas, callouts, stage })).catch(() => null)
   : Promise.resolve(null);
-const intro = createIntro({ root, ready: started });
+const intro = createIntro({
+  root,
+  stream: byId("intro-stream"),
+  count: byId("intro-count"),
+  ready: started,
+});
+// Where the stream's head sits in the hero until the scene can say exactly.
+const estimatedHead = (): ScreenPoint =>
+  innerWidth / innerHeight < 0.8 ? { x: 0.36, y: 0.76 } : { x: 0.54, y: 0.68 };
 
 // ---- Frame ----
 let shown = "";
@@ -252,8 +261,8 @@ const frame = (now: number): void => {
   if (scrim) scrim.style.opacity = (1 - handOver).toFixed(3);
   if (vignette) vignette.style.opacity = (1 - 0.85 * handOver).toFixed(3);
 
-  const caughtUp = intro.readout(now);
-  const r = caughtUp ? { ...caughtUp, large: true } : readoutAt(b);
+  intro.tick(now, scene?.headOnScreen() ?? estimatedHead());
+  const r = readoutAt(b);
   const key = r.key + r.value + r.sub;
   if (key !== shown) {
     shown = key;
@@ -264,9 +273,8 @@ const frame = (now: number): void => {
   hud.classList.toggle("large", r.large && stage.mode === "story");
   hudBar.style.transform = `translateX(${((-(HEAD - r.position) / HEAD) * 240).toFixed(1)}px)`;
   let hudOpacity = stage.mode === "story" ? 1 - seg(b, 7.68, 7.8) : 0;
-  // On a phone the readout only shows once the story starts; after the intro it fades with the hero's entry.
-  if (innerWidth < 760 && !caughtUp)
-    hudOpacity *= Math.max(seg(b, 0.55, 0.85), intro.afterglow(now));
+  if (innerWidth < 760) hudOpacity *= seg(b, 0.55, 0.85);
+  hudOpacity *= intro.presence(now);
   hud.style.opacity = hudOpacity.toFixed(3);
   callouts.style.visibility = stage.mode === "story" ? "visible" : "hidden";
   canvas.style.visibility = stage.mode === "off" ? "hidden" : "visible";

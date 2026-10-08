@@ -66,6 +66,16 @@ const round = (n: number): string => n.toFixed(1);
   <div class="callout" data-callout="rebuilt"><i></i><span>Orders · <em>rebuilt</em></span></div>
 </div>
 
+<!-- The intro: the stream drawn up to its head, where the scene then lights up (src/scripts/landing/intro.ts). -->
+<div class="intro-stream" id="intro-stream" aria-hidden="true">
+  <div class="ruler"></div>
+  <div class="cursor"></div>
+  <div class="count">
+    <span class="count-key">Global stream · catching up</span>
+    <span class="count-value" id="intro-count">000 001</span>
+  </div>
+</div>
+
 <div class="hud" id="hud" aria-hidden="true">
   <div class="hud-bar"><i id="hud-bar"></i></div>
   <div class="hud-key" id="hud-key">Global stream · head</div>
@@ -253,6 +263,80 @@ const round = (n: number): string => n.toFixed(1);
     border-right: 1px solid var(--accent);
   }
 
+  /* ---- The intro's stream ---- */
+  .intro-stream {
+    display: none;
+  }
+
+  :global(.intro) .intro-stream {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+    transition: opacity 0.6s var(--ease);
+  }
+
+  :global(.intro.entering) .intro-stream {
+    opacity: 0;
+  }
+
+  /* A ruler of events on a hairline rod, fading in from the far end like the stream in the scene. */
+  .ruler {
+    position: absolute;
+    left: 0;
+    top: var(--head-y, 68vh);
+    width: var(--head-x, 0px);
+    height: 16px;
+    transform: translateY(-50%);
+    background:
+      linear-gradient(var(--rule), var(--rule)) 0 50% / 100% 1px no-repeat,
+      repeating-linear-gradient(90deg, var(--muted) 0 1px, transparent 1px 80px) 0 0 / 100% 100% no-repeat,
+      repeating-linear-gradient(90deg, var(--faint) 0 1px, transparent 1px 8px) 0 50% / 100% 50% no-repeat;
+    mask: linear-gradient(90deg, transparent, #000 30%);
+  }
+
+  .cursor {
+    position: absolute;
+    left: var(--head-x, 0px);
+    top: var(--head-y, 68vh);
+    width: 2px;
+    height: 34px;
+    transform: translate(-1px, -50%);
+    background: var(--accent);
+    box-shadow: 0 0 14px 2px color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+
+  /* The position rides just past the cursor (placed by intro.ts), above the ruler. */
+  .count {
+    position: absolute;
+    left: var(--count-x, var(--gutter));
+    top: var(--head-y, 68vh);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    transform: translateY(calc(-100% - 26px));
+    font: 500 clamp(2.4rem, 1.4rem + 2.6vw, 4.25rem) / 1 var(--font-mono);
+    white-space: nowrap;
+  }
+
+  .count-key {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-stretch: 125%;
+    font-size: 0.625rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .count-value {
+    letter-spacing: 0.01em;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent-text);
+  }
+
   /* ---- Readout ---- */
   .hud {
     position: fixed;
@@ -368,12 +452,6 @@ const round = (n: number): string => n.toFixed(1);
 
     .hud:global(.large) .hud-value {
       font-size: 1.9rem;
-    }
-
-    /* While the page catches up the readout sits low, clear of the logo. */
-    :global(.intro) .hud {
-      top: auto;
-      bottom: 28px;
     }
   }
 
