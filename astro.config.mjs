@@ -13,6 +13,9 @@ export default defineConfig({
   vite: {
     // three.js is one chunk, loaded after first paint and only where WebGL 2 is available.
     build: { chunkSizeWarningLimit: 650 },
+    // The scene imports three.js dynamically, so the dev server would only find it on first use,
+    // re-optimize, and fail that import as an outdated dependency. Pre-bundle it from the start.
+    optimizeDeps: { include: ["three", "three/addons/geometries/RoundedBoxGeometry.js"] },
   },
   fonts: [
     {
