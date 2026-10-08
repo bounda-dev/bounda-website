@@ -31,9 +31,11 @@ export interface IntroArgs {
   readonly ready: Promise<unknown>;
 }
 
-const COUNT_MS = 1400; // the count to the head, when everything is ready in time
-const FINISH_MS = 260; // the last stretch once it is
-const GIVE_UP_MS = 3500; // past this the hero enters anyway; the scene fades in when it arrives
+// The hero is the page's largest paint, so the intro is held to about two seconds even when the
+// scene is slow to arrive: past GIVE_UP_MS the hero enters and the scene fades in when it is ready.
+const COUNT_MS = 1200; // the count to the head, when everything is ready in time
+const FINISH_MS = 220; // the last stretch once it is
+const GIVE_UP_MS = 1700;
 const ENTER_MS = 1700; // the longest enter transition, delays included
 const PRESENCE_MS = 600;
 const SEEN = "bounda-intro";

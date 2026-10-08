@@ -271,7 +271,8 @@ const frame = (now: number): void => {
     const shift = b < (c.a + c.z) / 2 ? (1 - o) * 22 : -(1 - o) * 22;
     c.el.style.opacity = o.toFixed(3);
     c.el.style.transform = `translate3d(0, ${shift.toFixed(1)}px, 0)`;
-    c.el.style.visibility = o <= 0.002 ? "hidden" : "visible";
+    // Hidden captions stay readable to assistive technology; they only stop catching the pointer.
+    write(c.el, "pointer-events", o > 0.5 ? "auto" : "none");
   }
   railItems.forEach((li, i) => {
     const [a, z] = RAIL[i] ?? [0, 0];
