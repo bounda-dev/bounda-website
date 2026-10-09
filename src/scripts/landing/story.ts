@@ -164,7 +164,7 @@ const readoutAt = (b: number): Readout => {
     const step = FOLD[k];
     if (!step) throw new Error(`no fold step ${k}`);
     return at(
-      `Apply ${k + 1} of 3 · order/7f3a`,
+      `Evolve ${k + 1} of 3 · order/7f3a`,
       formatPosition(step.position),
       `${step.name} → ${step.state}`,
       step.position,
