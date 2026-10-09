@@ -7,16 +7,17 @@ const files = [
     title: "Command handler",
     role: "decides",
     code: `// app/domain/order/commands/place-order.ts
-import { DomainError } from "@bounda-dev/core";
 import type { Command } from "./+types/place-order";
 
 export const payload = ({ z }: Command.PayloadArgs) =>
   z.object({ orderId: z.uuid(), customerId: z.string().min(1), total: z.number().positive() });
 
-export const handler = ({ command, state, events }: Command.HandlerArgs) => {
-  if (state.status !== "new") {
-    throw new DomainError(\`Order \${command.aggregateId} was already placed\`);
-  }
+export const rejections = ({ command }: Command.RejectionsArgs) => ({
+  AlreadyPlaced: \`Order \${command.aggregateId} was already placed\`,
+});
+
+export const handler = ({ command, state, events, reject }: Command.HandlerArgs) => {
+  if (state.status !== undefined) return reject("AlreadyPlaced");
   return [
     events.orderPlaced({ customerId: command.payload.customerId, total: command.payload.total }),
   ];
@@ -24,15 +25,14 @@ export const handler = ({ command, state, events }: Command.HandlerArgs) => {
   },
   {
     title: "Event",
-    role: "applies",
+    role: "opens the order",
     code: `// app/domain/order/order-placed.ts
 import type { Event } from "./+types/order-placed";
 
 export const payload = ({ z }: Event.PayloadArgs) =>
   z.object({ customerId: z.string(), total: z.number().positive() });
 
-export const apply = ({ state, event }: Event.ApplyArgs) => ({
-  ...state,
+export const begin = ({ event }: Event.BeginArgs) => ({
   status: "placed" as const,
   customerId: event.payload.customerId,
   total: event.payload.total,
@@ -63,7 +63,7 @@ export const project = async ({ event, table }: Projection.Args) => {
       <p class="label">The code</p>
       <h2 class="display">Three files. Their place and name are the declaration.</h2>
       <p>
-        A command handler decides, an event applies, a projection writes a row. <code>bounda generate</code> reads the folders and
+        A command handler decides, an event becomes the state, a projection writes a row. <code>bounda generate</code> reads the folders and
         infers every type, so there is no registry to keep in sync.
       </p>
       <pre class="tree">app/
