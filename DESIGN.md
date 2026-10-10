@@ -58,7 +58,7 @@ Self-hosted from Google Fonts at build time (Astro's font API, which also genera
 - **Minimum size:** lockup 16px tall; symbol 12px. Favicons use the pixel cuts (32px: bar 5, foot 3; 16px: bar 3, foot 2, tail 2).
 - **Color:** `--text` on `--bg`. The lockup is never ochre; the symbol alone may be ochre when it closes something (see below).
 - **Don't:** stretch, outline, add effects, set the wordmark in a font, or build the mark as a landmark in a scene.
-- **Files:** `brand/` holds the lockup and the symbol in `currentColor`, on Bone and on Basalt, the app icon as SVG and as a 1024px PNG, and the avatar the same way: the app icon with only the clear space around the symbol, so it stays above the symbol's minimum size where an avatar is shown at 20–40px (GitHub, npm, social profiles). The site's favicons are in `public/`.
+- **Files:** `brand/` holds the lockup and the symbol in `currentColor`, on Bone and on Basalt, the app icon as SVG and as a 1024px PNG, and the avatar the same way: the app icon with only the clear space around the symbol, so it stays above the symbol's minimum size where an avatar is shown at 20–40px (GitHub, npm, social profiles). It also holds `github-social-preview.png`, the social preview uploaded by hand in the settings of `bounda-dev/bounda`: the hero at 1280 by 640, as `public/og.jpg` is at 1200 by 630. The site's favicons are in `public/`.
 
 ## The ⅃ as a device
 
