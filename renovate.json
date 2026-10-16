@@ -32,6 +32,11 @@
       "groupSlug": "pre-1-minors",
       "automerge": false,
       "dependencyDashboardApproval": true
+    },
+    {
+      "description": "astro check accepts TypeScript up to 6, so TypeScript stays below 7.",
+      "matchPackageNames": ["typescript"],
+      "allowedVersions": "<7"
     }
   ]
 }
