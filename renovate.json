@@ -1,0 +1,37 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:best-practices"],
+  "semanticCommits": "enabled",
+  "schedule": ["on monday"],
+  "timezone": "Europe/Madrid",
+  "rangeStrategy": "pin",
+  "automergeStrategy": "squash",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "automerge": true,
+    "schedule": ["on monday"]
+  },
+  "packageRules": [
+    {
+      "description": "Everything that is not a major lands in one weekly pull request, merged once CI is green.",
+      "matchUpdateTypes": ["minor", "patch", "pin", "pinDigest", "digest"],
+      "groupName": "non-major dependencies",
+      "groupSlug": "non-major",
+      "automerge": true
+    },
+    {
+      "description": "A major opens no pull request until it is ticked in the Dependency Dashboard.",
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "Below 1.0 a minor may break, so it waits for approval like a major.",
+      "matchUpdateTypes": ["minor"],
+      "matchCurrentVersion": "<1.0.0",
+      "groupName": "pre-1.0 minors",
+      "groupSlug": "pre-1-minors",
+      "automerge": false,
+      "dependencyDashboardApproval": true
+    }
+  ]
+}
