@@ -6,15 +6,13 @@ const year = new Date().getFullYear();
 
 <footer class="footer">
   <div class="wrap">
-    <div class="mark">
-      <a class="brand" href="/" aria-label="Bounda home"><Lockup /></a>
-      <small class="link">© {year} Bounda</small>
-    </div>
+    <a class="brand" href="/" aria-label="Bounda home"><Lockup /></a>
     <ul>
       <li><a class="link" href="https://docs.bounda.dev/getting-started/">Documentation</a></li>
       <li><a class="link" href="https://github.com/bounda-dev/bounda">GitHub</a></li>
       <li><a class="link" href="https://www.npmjs.com/org/bounda-dev">npm</a></li>
       <li><a class="link" href="https://github.com/bounda-dev/bounda/blob/main/LICENSE">Apache 2.0</a></li>
+      <li><small class="copyright">© {year} Bounda</small></li>
     </ul>
   </div>
 </footer>
@@ -36,12 +34,6 @@ const year = new Date().getFullYear();
     justify-content: space-between;
   }
 
-  .mark {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-  }
-
   .brand {
     color: var(--text);
     line-height: 0;
@@ -55,6 +47,7 @@ const year = new Date().getFullYear();
     display: flex;
     flex-wrap: wrap;
     gap: 24px;
+    align-items: center;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -73,5 +66,15 @@ const year = new Date().getFullYear();
 
   .link:hover {
     color: var(--text);
+  }
+
+  .copyright {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-stretch: 125%;
+    font-size: 0.5625rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
   }
 </style>
