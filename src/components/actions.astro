@@ -1,0 +1,41 @@
+---
+import Install from "./install.astro";
+
+// The page's one call to action, the same where the hero ends and where the page does.
+const attributes = Astro.props;
+---
+
+<div class="actions" {...attributes}>
+  <Install />
+  <div class="links">
+    <a class="text-link" href="https://docs.bounda.dev/getting-started/">Read the docs</a>
+    <a class="text-link dim" href="https://github.com/bounda-dev/bounda">GitHub</a>
+  </div>
+</div>
+
+<style>
+  .actions {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    max-width: 100%;
+  }
+
+  .links {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+
+  @media (max-width: 760px) {
+    .actions {
+      display: flex;
+      align-items: stretch;
+    }
+
+    .links {
+      justify-content: center;
+    }
+  }
+</style>

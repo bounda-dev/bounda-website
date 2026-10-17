@@ -1,5 +1,5 @@
 ---
-import Install from "../install.astro";
+import Actions from "../actions.astro";
 ---
 
 <section class="cta" id="cta">
@@ -7,15 +7,8 @@ import Install from "../install.astro";
     <div class="box" data-reveal>
       <p class="label eyebrow">Start</p>
       <h2 class="display">Start with one aggregate.</h2>
-      <p>Scaffold a project with a domain, a read model and a test, on SQLite, PostgreSQL or Cloudflare.</p>
-      <Install />
-      <div class="links">
-        <a class="text-link" href="https://docs.bounda.dev/getting-started/">Documentation</a>
-        <a class="text-link" href="https://github.com/bounda-dev/bounda">GitHub</a>
-      </div>
-      <p class="note">
-        Before 1.0 a minor release can change the API. <a href="https://www.npmjs.com/org/bounda-dev">The packages on npm</a>.
-      </p>
+      <p>One command scaffolds a working app: an aggregate, a read model and a test that already passes.</p>
+      <Actions />
     </div>
   </div>
 </section>
@@ -64,24 +57,6 @@ import Install from "../install.astro";
     max-width: 40ch;
     margin: 0 0 32px;
     color: var(--muted);
-  }
-
-  .links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 22px 28px;
-    margin-top: 32px;
-  }
-
-  .box > .note {
-    margin: 28px 0 0;
-    font-size: 0.875rem;
-  }
-
-  .note a {
-    color: var(--text);
-    text-decoration-color: var(--accent);
-    text-underline-offset: 3px;
   }
 
   @media (max-width: 760px) {
