@@ -9,6 +9,7 @@ const attributes = Astro.props;
   <Install />
   <div class="links">
     <a class="text-link" href="https://docs.bounda.dev/getting-started/">Read the docs</a>
+    <a class="text-link" href="https://demo.bounda.dev">Live demo</a>
     <a class="text-link dim" href="https://github.com/bounda-dev/bounda">GitHub</a>
   </div>
 </div>
@@ -35,7 +36,17 @@ const attributes = Astro.props;
     }
 
     .links {
+      gap: 16px;
       justify-content: center;
+    }
+
+    .links a {
+      white-space: nowrap;
+    }
+
+    /* Three links fit a phone's width only without the ochre rule after each. */
+    .links a::after {
+      display: none;
     }
   }
 </style>

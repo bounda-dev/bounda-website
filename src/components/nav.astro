@@ -9,6 +9,7 @@ import ThemeToggle from "./theme-toggle.astro";
   <a class="brand" href="/" aria-label="Bounda home"><Lockup /></a>
   <ul data-enter style="--enter-delay: 0.46s">
     <li><a class="link" href="https://docs.bounda.dev/getting-started/">Docs</a></li>
+    <li class="wide"><a class="link" href="https://demo.bounda.dev">Demo</a></li>
     <li><a class="link" href="https://github.com/bounda-dev/bounda">GitHub</a></li>
     <li><ThemeToggle /></li>
   </ul>
@@ -82,6 +83,11 @@ import ThemeToggle from "./theme-toggle.astro";
 
     .brand :global(.lockup) {
       height: 20px;
+    }
+
+    /* The hero's call to action already offers the demo, and the bar has no room for it. */
+    .wide {
+      display: none;
     }
   }
 </style>
