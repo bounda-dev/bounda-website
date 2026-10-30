@@ -90,6 +90,7 @@ How every table of facts is set, in docs, on the landing page and in Studio:
 
 - The hero is the mechanism: the ⅃ as a machined monolith whose foot becomes the global stream, events moving along it, the live head in ochre.
 - Real-time 3D in code (three.js), art-directed, in Basalt or Bone. No AI photography.
+- The scene runs in a worker on an OffscreenCanvas wherever the browser allows it, so the page's own thread never loads, compiles or renders it; the page only sends the beat and pins the callouts. Where it cannot (older Safari) the same scene runs on the page.
 - **The object takes the logo's colour** (`--text` on `--bg`): satin aluminium on Basalt, black anodised on Bone. Each mode has its own studio; the geometry and the choreography are the same.
 - Glows are ochre. On Basalt they add light; on Bone they tint, because added light disappears on a pale ground.
 - Red appears in a scene only for a refused command or an error.
@@ -108,6 +109,7 @@ It is not a marketing website. It answers what Bounda is and why; anything about
 - **One scene, one accent, at most three annotations on screen.** Light in the scene means something; no decorative glows, particles or neon.
 - **No metaphors, no "enterprise transformation" language, no exaggerated claims.** Say how stable it is: before 1.0, a minor release can change the API.
 - **Nothing depends on the 3D.** The page reads before the scene loads; without WebGL a drawing stands in, and with reduced motion the story is a still and a grid.
+- **The hero is painted on the first frame.** On a first visit it settles into place from a few pixels below, in order, but it never fades in or waits: the intro (the stream catching up, the readout counting to the head) is the scene's loading state, drawn in the stage beside the copy, and gives way to the scene when it is ready or after about two seconds.
 - **Inspirations, by feeling and not by copying:** Vercel (clarity, spacing), Resend (confidence, restraint), Linear (focus, calm UI), EventStoreDB's docs (technical seriousness), and scroll-driven product films (one manufactured object that plays its own mechanism as you scroll).
 
 ## Voice
@@ -116,6 +118,6 @@ Plain, technical, short. Active voice. The vocabulary of the product: event stor
 
 ## Where it lives
 
-- Landing: `bounda-dev/bounda-website`, `src/styles/tokens.css`; the scene is `src/scripts/landing/scene.ts`.
+- Landing: `bounda-dev/bounda-website`, `src/styles/tokens.css`; the scene is `src/scripts/landing/scene.ts`, started by `scene-client.ts` in a worker (`scene-worker.ts`) or on the page.
 - Docs: `docs/src/styles/bounda.css` in `bounda-dev/bounda`, mirroring the same tokens on Starlight's variables.
 - Studio: the same tokens; the ledger grammar for every table.

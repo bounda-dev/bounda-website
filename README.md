@@ -16,6 +16,12 @@ pnpm dev      # http://localhost:4321
 pnpm build    # dist/
 ```
 
+The 3D scene (`src/scripts/landing/scene.ts`) runs in a Web Worker on an OffscreenCanvas where the
+browser supports it, and on the page otherwise; `scene-client.ts` decides and `scene-worker.ts` is the
+worker. Either way the page paints its hero on the first frame and never blocks on three.js, which is
+what keeps Lighthouse at 100 on mobile. Measure with `pnpm build && pnpm preview` and Lighthouse
+against `http://localhost:4321/`; the Cloudflare beacon is the one request that fails offline.
+
 pnpm, like the framework repository, and not only for consistency: `npm ci` cannot install this
 tree on Linux from a lockfile resolved on macOS, because rolldown ships its native bindings as
 per-platform optional dependencies. The pnpm lockfile carries all of them.
@@ -40,7 +46,9 @@ A Worker with static assets, built by Cloudflare on every push to `main`:
 | `NODE_VERSION` | `24`, since Astro 7 requires `>=22.12.0` |
 | `PNPM_VERSION` | `12.4.2`, because `allowBuilds` in `pnpm-workspace.yaml` is pnpm 12 |
 
-`wrangler.jsonc` serves `dist/` and answers anything missing with `404.html`. The build image ships
+`wrangler.jsonc` serves `dist/` and answers anything missing with `404.html`. `public/_headers` sets the
+response headers: a year's immutable cache for the hashed files under `/_astro/`, and the usual safety
+headers for everything. The build image ships
 pnpm 10, which reads `pnpm-workspace.yaml` as a workspace definition, so that file declares
 `packages` and names the built dependencies under both `allowBuilds` (pnpm 12) and
 `onlyBuiltDependencies` (pnpm 10).
