@@ -19,8 +19,10 @@ pnpm build    # dist/
 The 3D scene (`src/scripts/landing/scene.ts`) runs in a Web Worker on an OffscreenCanvas where the
 browser supports it, and on the page otherwise; `scene-client.ts` decides and `scene-worker.ts` is the
 worker. Either way the page paints its hero on the first frame and never blocks on three.js, which is
-what keeps Lighthouse at 100 on mobile. Measure with `pnpm build && pnpm preview` and Lighthouse
-against `http://localhost:4321/`; the Cloudflare beacon is the one request that fails offline.
+what keeps Lighthouse at 100 on mobile. `pnpm build && pnpm lighthouse` measures it the way CI does
+(`scripts/lighthouse.mjs`: the mobile default and the desktop preset, median of three runs, reports in
+`lighthouse-reports/`) and fails under the budget set there: 95 in performance, 100 in the rest. The
+Cloudflare beacon is kept out of the audit, so the check works offline and never fails on a third party.
 
 pnpm, like the framework repository, and not only for consistency: `npm ci` cannot install this
 tree on Linux from a lockfile resolved on macOS, because rolldown ships its native bindings as
