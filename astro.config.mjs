@@ -5,13 +5,15 @@ import { defineConfig, fontProviders } from "astro/config";
 // so it is requested at that one weight across the width axis it uses (100% to 125%).
 export default defineConfig({
   site: "https://bounda.dev",
-  prefetch: true,
-  integrations: [sitemap()],
+  // Every link on the page leaves the site (docs, demo, GitHub), so there is nothing to prefetch.
+  prefetch: false,
+  // The site is rebuilt on every push, so the build is the last change.
+  integrations: [sitemap({ lastmod: new Date() })],
   build: {
     inlineStylesheets: "always",
   },
   vite: {
-    // three.js is one chunk, loaded after first paint and only where WebGL 2 is available.
+    // three.js is one chunk, run in a worker where the browser allows it (see src/scripts/landing/scene-client.ts).
     build: { chunkSizeWarningLimit: 650 },
     // The scene imports three.js dynamically, so the dev server would only find it on first use,
     // re-optimize, and fail that import as an outdated dependency. Pre-bundle it from the start.

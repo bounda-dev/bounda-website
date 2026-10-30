@@ -50,7 +50,7 @@ h3 {
 }
 
 :focus-visible {
-  outline: 1px solid var(--accent);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 
@@ -139,23 +139,18 @@ h3 {
   transform: none;
 }
 
-/* The intro (src/scripts/landing/intro.ts): the hero holds back while the page catches up with the
-   stream, then enters in order, each line of the headline rising from its own baseline. */
+/* The intro (src/scripts/landing/intro.ts): on a first visit the page settles into place from a few
+   pixels below, in order, the way new entries arrive at the end, while the stream catches up in the
+   stage. It moves but never fades: the hero is painted, legible, on the first frame, and the browser
+   counts it as such; nothing waits on a script or on the scene. */
 .intro [data-enter] {
-  opacity: 0;
-  transform: translateY(16px);
+  animation: enter 0.9s var(--ease) var(--enter-delay, 0s) both;
 }
 
-.intro [data-rise] {
-  transform: translateY(105%);
-}
-
-.intro.entering :is([data-enter], [data-rise]) {
-  opacity: 1;
-  transform: none;
-  transition:
-    opacity 0.6s var(--ease) var(--enter-delay, 0s),
-    transform 0.9s var(--ease) var(--enter-delay, 0s);
+@keyframes enter {
+  from {
+    transform: translateY(12px);
+  }
 }
 
 /* A still page (no JavaScript, or reduced motion; see base.astro) shows everything in place. */

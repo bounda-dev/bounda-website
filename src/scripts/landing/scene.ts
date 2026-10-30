@@ -1,6 +1,8 @@
 // The mechanism in real-time 3D: the ⅃ as a machined monolith whose foot becomes the global stream,
 // a command condensing into an event at its head, the order's state folded into a channel in the bar,
 // a projection into the read model's rows, and the rebuild that rewinds to position 1 and replays.
+// It touches no DOM: everything it needs from the page comes through its host (SceneHost), so it
+// runs the same in a worker on an OffscreenCanvas (scene-worker.ts) as on the page (scene-client.ts).
 
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
@@ -23,9 +25,45 @@ import {
   seg,
 } from "./timeline";
 
+/** Where a callout is pinned on screen this frame, in CSS pixels of the canvas. */
+export interface CalloutPlacement {
+  readonly id: string;
+  readonly x: number;
+  readonly y: number;
+  readonly opacity: number;
+  /** Set when the label should hang to the left of its point. */
+  readonly left: boolean;
+}
+
+export interface CalloutFrame {
+  readonly placed: readonly CalloutPlacement[];
+  /** The fold step being shown, for the fold callout's text. */
+  readonly fold: { readonly name: string; readonly position: string } | null;
+}
+
+type Canvas = HTMLCanvasElement | OffscreenCanvas;
+type Canvas2D = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+type CanvasTexture = THREE.CanvasTexture<Canvas>;
+
+/** What the scene needs from wherever it runs: the page itself, or a worker with an OffscreenCanvas. */
+export interface SceneHost {
+  /** Device pixels per CSS pixel. */
+  readonly pixelRatio: number;
+  /** A coarse pointer (a phone), which starts at a lower resolution. */
+  readonly coarse: boolean;
+  /** The canvas's size in CSS pixels, read every frame. */
+  readonly size: () => { readonly w: number; readonly h: number };
+  readonly createCanvas: (width: number, height: number) => Canvas;
+  /** The mono font stack (the --font-mono token) for the engraved positions, and the way to load it. */
+  readonly monoFamily: string;
+  readonly loadFont: (font: string) => Promise<unknown>;
+  /** Where the callouts are pinned after each frame. */
+  readonly callouts: (frame: CalloutFrame) => void;
+}
+
 export interface SceneArgs {
-  readonly canvas: HTMLCanvasElement;
-  readonly callouts: HTMLElement;
+  readonly canvas: Canvas;
+  readonly host: SceneHost;
   readonly stage: Stage;
 }
 
@@ -186,21 +224,23 @@ const withWorldPosition = (shader: THREE.WebGLProgramParametersWithUniforms): vo
   );
 };
 
+const context2d = (c: Canvas): Canvas2D | null =>
+  (c as HTMLCanvasElement).getContext("2d") as Canvas2D | null;
+
 const canvasTexture = (
+  create: SceneHost["createCanvas"],
   width: number,
   height: number,
-  draw: (g: CanvasRenderingContext2D) => void,
-): THREE.CanvasTexture => {
-  const c = document.createElement("canvas");
-  c.width = width;
-  c.height = height;
-  const g = c.getContext("2d");
+  draw: (g: Canvas2D) => void,
+): CanvasTexture => {
+  const c = create(width, height);
+  const g = context2d(c);
   if (g) draw(g);
   return new THREE.CanvasTexture(c);
 };
 
-const radialTexture = (): THREE.CanvasTexture => {
-  const t = canvasTexture(128, 128, (g) => {
+const radialTexture = (create: SceneHost["createCanvas"]): CanvasTexture => {
+  const t = canvasTexture(create, 128, 128, (g) => {
     const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
     gr.addColorStop(0, "rgba(255,255,255,1)");
     gr.addColorStop(0.25, "rgba(255,255,255,.45)");
@@ -289,20 +329,15 @@ const buildStudio = (pmrem: THREE.PMREMGenerator, light: boolean): THREE.Texture
   return pmrem.fromScene(s, 0.02).texture;
 };
 
-export const startScene = async ({
-  canvas,
-  callouts,
-  stage,
-}: SceneArgs): Promise<SceneControls> => {
+export const startScene = async ({ canvas, host, stage }: SceneArgs): Promise<SceneControls> => {
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: true,
     alpha: true,
     powerPreference: "high-performance",
   });
-  const mobile = matchMedia("(pointer: coarse)").matches;
   // Resolution starts at the screen's density and steps down while frames run long (see adapt).
-  let pixelRatio = Math.min(devicePixelRatio || 1, mobile ? 1.5 : 2);
+  let pixelRatio = Math.min(host.pixelRatio || 1, host.coarse ? 1.5 : 2);
   renderer.setPixelRatio(pixelRatio);
   renderer.setClearColor(0x000000, 0);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -372,7 +407,7 @@ export const startScene = async ({
   };
 
   // Everything that glows, re-tinted and re-blended when the mode changes.
-  const glowTexture = radialTexture();
+  const glowTexture = radialTexture(host.createCanvas);
   const glows: {
     readonly material: THREE.Material & { color?: THREE.Color };
     readonly tone: "accent" | "highlight";
@@ -409,7 +444,7 @@ export const startScene = async ({
   };
 
   // Brushed finish: fine vertical streaks in the roughness of the faces, like a machined part.
-  const brushed = canvasTexture(512, 512, (g) => {
+  const brushed = canvasTexture(host.createCanvas, 512, 512, (g) => {
     const r = seeded(11);
     g.fillStyle = "#c4c4c4";
     g.fillRect(0, 0, 512, 512);
@@ -489,7 +524,7 @@ export const startScene = async ({
   });
   const fill = new THREE.Mesh(fillGeometry, fillMaterial);
   fill.position.set(0, CHANNEL_BASE, FRONT + 0.003);
-  const haloTexture = canvasTexture(64, 4, (g) => {
+  const haloTexture = canvasTexture(host.createCanvas, 64, 4, (g) => {
     const gr = g.createLinearGradient(0, 0, 64, 0);
     gr.addColorStop(0, "rgba(255,255,255,0)");
     gr.addColorStop(0.42, "rgba(255,255,255,.35)");
@@ -563,18 +598,13 @@ export const startScene = async ({
   // Engraved positions on every tenth plate, from one canvas atlas.
   const MAJORS: number[] = [];
   for (let i = 1; i < PLATES; i += 10) MAJORS.push(i);
-  const atlasCanvas = document.createElement("canvas");
-  atlasCanvas.width = 1024;
-  atlasCanvas.height = 512;
+  const atlasCanvas = host.createCanvas(1024, 512);
   const atlas = new THREE.CanvasTexture(atlasCanvas);
   atlas.colorSpace = THREE.SRGBColorSpace;
   atlas.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-  const monoFamily =
-    getComputedStyle(document.documentElement).getPropertyValue("--font-mono").trim() ||
-    "monospace";
-  const atlasFont = `500 44px ${monoFamily}`;
+  const atlasFont = `500 44px ${host.monoFamily || "monospace"}`;
   const drawAtlas = (): void => {
-    const g = atlasCanvas.getContext("2d");
+    const g = context2d(atlasCanvas);
     if (!g) return;
     g.clearRect(0, 0, 1024, 512);
     g.fillStyle = g.strokeStyle = "#fff";
@@ -594,7 +624,7 @@ export const startScene = async ({
   };
   drawAtlas();
   let stillShown = false; // set by still(), so the still is redrawn once the engraving font arrives
-  document.fonts?.load(atlasFont).then(
+  void host.loadFont(atlasFont).then(
     () => {
       drawAtlas();
       if (stillShown) still();
@@ -858,7 +888,7 @@ export const startScene = async ({
   shadowFloor.receiveShadow = true;
   shadowFloor.renderOrder = 3;
   const poolMaterial = new THREE.MeshBasicMaterial({
-    map: radialTexture(),
+    map: radialTexture(host.createCanvas),
     transparent: true,
     depthWrite: false,
   });
@@ -868,7 +898,7 @@ export const startScene = async ({
   pool.position.set(-0.4, 0, 0.4);
   pool.renderOrder = 1;
   const contactMaterial = new THREE.MeshBasicMaterial({
-    map: canvasTexture(128, 128, (g) => {
+    map: canvasTexture(host.createCanvas, 128, 128, (g) => {
       const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
       gr.addColorStop(0, "rgba(0,0,0,1)");
       gr.addColorStop(0.3, "rgba(0,0,0,.6)");
@@ -1088,8 +1118,7 @@ export const startScene = async ({
     camera.updateMatrixWorld();
   };
   const resize = (): void => {
-    const w = canvas.clientWidth || innerWidth;
-    const h = canvas.clientHeight || innerHeight;
+    const { w, h } = host.size();
     viewport.w = w;
     viewport.h = h;
     renderer.setSize(w, h, false);
@@ -1099,7 +1128,11 @@ export const startScene = async ({
     fitPath();
   };
   resize();
-  addEventListener("resize", resize);
+  // The host's size is read every frame; a change re-lays the camera's path (see frame and still).
+  const fit = (): void => {
+    const { w, h } = host.size();
+    if (w !== viewport.w || h !== viewport.h) resize();
+  };
 
   // ---- The objects at a beat ----
   const eventAt = new THREE.Vector3();
@@ -1308,12 +1341,7 @@ export const startScene = async ({
     plateReflection.opacity = look.reflection[1] * (1 - 0.8 * inWindow(b, 5.7, 7.25, 0.15));
   };
 
-  // ---- Callouts: technical labels pinned to points in the scene ----
-  const calloutEls = new Map<string, { readonly el: HTMLElement; shown: boolean }>();
-  for (const el of callouts.querySelectorAll<HTMLElement>("[data-callout]"))
-    calloutEls.set(el.dataset.callout ?? "", { el, shown: false });
-  const foldText = callouts.querySelector<HTMLElement>("[data-fold-text]");
-  let foldShown = -2;
+  // ---- Callouts: technical labels pinned to points in the scene, placed on the page by the host ----
   const point = new THREE.Vector3();
   const CALLOUTS: readonly (readonly [
     string,
@@ -1341,39 +1369,26 @@ export const startScene = async ({
   ];
   const placeCallouts = (b: number): void => {
     const step = FOLD[foldStep];
-    if (foldStep !== foldShown && step && foldText) {
-      foldShown = foldStep;
-      foldText.firstChild?.replaceWith(`${step.name} · `);
-      const position = foldText.querySelector("em");
-      if (position) position.textContent = formatPosition(step.position);
-    }
+    const placed: CalloutPlacement[] = [];
     for (const [id, a, z, locate] of CALLOUTS) {
-      const c = calloutEls.get(id);
-      if (!c) continue;
       const o = inWindow(b, a, z, 0.08);
-      if (o <= 0.001) {
-        if (c.shown) {
-          c.el.style.opacity = "0";
-          c.shown = false;
-        }
-        continue;
-      }
+      if (o <= 0.001) continue;
       locate(point).project(camera);
-      if (point.z > 1 || Math.abs(point.x) > 1.2 || Math.abs(point.y) > 1.2) {
-        c.el.style.opacity = "0";
-        c.shown = false;
-        continue;
-      }
+      if (point.z > 1 || Math.abs(point.x) > 1.2 || Math.abs(point.y) > 1.2) continue;
       const x = (point.x * 0.5 + 0.5) * viewport.w;
       const y = (-point.y * 0.5 + 0.5) * viewport.h;
-      c.el.classList.toggle(
-        "left",
-        ((id === "stream" || id === "query") && x >= 160) || x > viewport.w - 240,
-      );
-      c.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
-      c.el.style.opacity = o.toFixed(3);
-      c.shown = true;
+      placed.push({
+        id,
+        x: Math.round(x * 10) / 10,
+        y: Math.round(y * 10) / 10,
+        opacity: Math.round(o * 1000) / 1000,
+        left: ((id === "stream" || id === "query") && x >= 160) || x > viewport.w - 240,
+      });
     }
+    host.callouts({
+      placed,
+      fold: step ? { name: step.name, position: formatPosition(step.position) } : null,
+    });
   };
 
   const drift = (time: number, amount: number): void => {
@@ -1416,6 +1431,7 @@ export const startScene = async ({
 
   const frame = (): void => {
     if (stage.mode === "off") return;
+    fit();
     adapt(performance.now());
     applyTheme(stage.theme);
     const time = stage.time;

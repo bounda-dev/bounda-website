@@ -1,8 +1,9 @@
 // The scroll-driven story: turns scroll into the beat, sets the captions and the readout, and hands
-// every frame to the 3D scene, which loads only where WebGL 2 is available.
+// every frame to the 3D scene, which runs in a worker where it can (see scene-client.ts).
 
 import { currentTheme, onThemeChange } from "../theme";
 import { createIntro, type ScreenPoint } from "./intro";
+import { startScene, type Scene } from "./scene-client";
 import {
   clamp,
   END,
@@ -19,20 +20,6 @@ import {
   type Stage,
   seg,
 } from "./timeline";
-
-interface Scene {
-  readonly frame: () => void;
-  readonly still: () => void;
-  readonly headOnScreen: () => ScreenPoint;
-}
-
-const webgl2 = (): boolean => {
-  const probe = document.createElement("canvas").getContext("webgl2");
-  probe?.getExtension("WEBGL_lose_context")?.loseContext();
-  return probe !== null;
-};
-// The scene is the heaviest part of the page, so its fetch starts before anything else here.
-const loading = webgl2() ? import("./scene") : null;
 
 const root = document.documentElement;
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -196,14 +183,13 @@ const readoutAt = (b: number): Readout => {
 };
 
 // ---- The scene and the intro ----
+// The scene is the heaviest part of the page, so it starts before anything else here.
 let scene: Scene | null = null;
-const started: Promise<Scene | null> = loading
-  ? loading.then(({ startScene }) => startScene({ canvas, callouts, stage })).catch(() => null)
-  : Promise.resolve(null);
+const started: Promise<Scene | null> = startScene({ canvas, callouts, stage }).catch(() => null);
 const intro = createIntro({
   root,
   stream: byId("intro-stream"),
-  count: byId("intro-count"),
+  readout: { key: hudKey, value: hudValue, sub: hudSub },
   ready: started,
 });
 // Where the stream's head sits in the hero until the scene can say exactly.
@@ -281,14 +267,16 @@ const frame = (now: number): void => {
   });
 
 
-  intro.tick(now, scene?.headOnScreen() ?? estimatedHead());
+  // While the intro counts, the readout is its counter.
   const r = readoutAt(b);
-  const key = r.key + r.value + r.sub;
-  if (key !== shown) {
-    shown = key;
-    hudKey.textContent = r.key;
-    hudValue.textContent = r.value;
-    hudSub.textContent = r.sub;
+  if (!intro.tick(now, scene?.headOnScreen() ?? estimatedHead())) {
+    const key = r.key + r.value + r.sub;
+    if (key !== shown) {
+      shown = key;
+      hudKey.textContent = r.key;
+      hudValue.textContent = r.value;
+      hudSub.textContent = r.sub;
+    }
   }
   hud.classList.toggle("large", r.large && stage.mode === "story");
   write(hudBar, "transform", `translateX(${((-(HEAD - r.position) / HEAD) * 240).toFixed(1)}px)`);
@@ -300,7 +288,7 @@ const frame = (now: number): void => {
   write(callouts, "visibility", stage.mode === "story" ? "visible" : "hidden");
   write(canvas, "visibility", stage.mode === "off" ? "hidden" : "visible");
 
-  scene?.frame();
+  if (stage.mode !== "off") scene?.frame();
   requestAnimationFrame(frame);
 };
 
@@ -324,7 +312,8 @@ void started.then(async (controls) => {
     onThemeChange(redraw);
   } else controls.frame();
   clearTimeout(late);
-  // The canvas fades in with the hero, and only once its first frame is drawn.
+  // The canvas fades in once its first frame is drawn, and not before the intro's stream has reached its head.
+  await controls.drawn;
   await intro.revealed;
   root.classList.remove("no-webgl");
   root.classList.add("webgl");

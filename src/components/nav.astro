@@ -7,12 +7,14 @@ import ThemeToggle from "./theme-toggle.astro";
 
 <header class="nav">
   <a class="brand" href="/" aria-label="Bounda home"><Lockup /></a>
-  <ul data-enter style="--enter-delay: 0.46s">
-    <li><a class="link" href="https://docs.bounda.dev/getting-started/">Docs</a></li>
-    <li class="wide"><a class="link" href="https://demo.bounda.dev">Demo</a></li>
-    <li><a class="link" href="https://github.com/bounda-dev/bounda">GitHub</a></li>
-    <li><ThemeToggle /></li>
-  </ul>
+  <nav aria-label="Primary" data-enter style="--enter-delay: 0.42s">
+    <ul>
+      <li><a class="link" href="https://docs.bounda.dev/getting-started/">Docs</a></li>
+      <li class="wide"><a class="link" href="https://demo.bounda.dev">Demo</a></li>
+      <li><a class="link" href="https://github.com/bounda-dev/bounda">GitHub</a></li>
+      <li><ThemeToggle /></li>
+    </ul>
+  </nav>
 </header>
 
 <style>
@@ -60,7 +62,11 @@ import ThemeToggle from "./theme-toggle.astro";
     padding: 0;
   }
 
+  /* Small type, but a finger-sized target: the padding is folded back into the margin. */
   .link {
+    display: inline-block;
+    padding: 12px 6px;
+    margin: -12px -6px;
     font-family: var(--font-display);
     font-weight: 600;
     font-stretch: 125%;
@@ -70,9 +76,11 @@ import ThemeToggle from "./theme-toggle.astro";
     text-transform: uppercase;
     text-decoration: none;
     color: var(--muted);
+    transition: color 0.16s var(--ease);
   }
 
-  .link:hover {
+  .link:hover,
+  .link:focus-visible {
     color: var(--text);
   }
 
