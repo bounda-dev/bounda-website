@@ -23,8 +23,9 @@ const facts = [
 ];
 ---
 
-<section class="facts" aria-label="What Bounda gives you">
+<section class="facts" aria-labelledby="facts-title">
   <div class="wrap">
+    <h2 class="visually-hidden" id="facts-title">What Bounda gives you</h2>
     <div class="grid">
       {
         facts.map((f, i) => (

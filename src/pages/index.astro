@@ -9,9 +9,51 @@ import Stage from "../components/landing/stage.astro";
 import Story from "../components/landing/story.astro";
 import Nav from "../components/nav.astro";
 import BaseLayout from "../layouts/base.astro";
+
+const site = (Astro.site ?? new URL("https://bounda.dev")).href;
+const repository = "https://github.com/bounda-dev/bounda";
+
+// What the page is, for search engines: the framework, its code, and the site that presents it.
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": `${site}#bounda`,
+      name: "Bounda",
+      description:
+        "An event sourcing and CQRS framework for TypeScript. Plain modules, inferred types, one database, and read models that rebuild from the global stream.",
+      url: site,
+      codeRepository: repository,
+      programmingLanguage: "TypeScript",
+      runtimePlatform: "Node.js",
+      license: `${repository}/blob/main/LICENSE`,
+      author: { "@id": `${site}#organization` },
+    },
+    {
+      "@type": "Organization",
+      "@id": `${site}#organization`,
+      name: "Bounda",
+      url: site,
+      logo: `${site}web-app-manifest-512x512.png`,
+      sameAs: ["https://github.com/bounda-dev", "https://www.npmjs.com/org/bounda-dev"],
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${site}#website`,
+      name: "Bounda",
+      url: site,
+      publisher: { "@id": `${site}#organization` },
+      inLanguage: "en",
+    },
+  ],
+};
 ---
 
 <BaseLayout>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+  </Fragment>
   <Stage />
   <Nav />
   <main id="main-content">

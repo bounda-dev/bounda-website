@@ -5,7 +5,8 @@ const command = "npm create bounda@latest my-app";
 <div class="install">
   <span class="prompt" aria-hidden="true">$</span>
   <code>{command}</code>
-  <button type="button" data-copy={command}>Copy</button>
+  <button type="button" data-copy={command} aria-label="Copy the install command">Copy</button>
+  <span class="visually-hidden" role="status" aria-live="polite" data-copy-status></span>
 </div>
 
 <style>
@@ -50,9 +51,14 @@ const command = "npm create bounda@latest my-app";
     cursor: pointer;
   }
 
-  button:hover {
+  button:hover,
+  button:focus-visible {
     color: var(--text);
     background: var(--raised);
+  }
+
+  button:focus-visible {
+    outline-offset: -3px;
   }
 
   @media (max-width: 760px) {
@@ -80,15 +86,21 @@ const command = "npm create bounda@latest my-app";
 
 <script>
   for (const button of document.querySelectorAll<HTMLButtonElement>("[data-copy]")) {
+    const status = button.parentElement?.querySelector("[data-copy-status]");
+    let reset: ReturnType<typeof setTimeout> | undefined;
     button.addEventListener("click", async () => {
+      let outcome = "Copied";
       try {
         await navigator.clipboard.writeText(button.dataset.copy ?? "");
-        button.textContent = "Copied";
       } catch {
-        button.textContent = "Select";
+        outcome = "Select";
       }
-      setTimeout(() => {
+      button.textContent = outcome;
+      if (status) status.textContent = outcome === "Copied" ? "Install command copied" : "Copying failed; select the command instead";
+      clearTimeout(reset);
+      reset = setTimeout(() => {
         button.textContent = "Copy";
+        if (status) status.textContent = "";
       }, 1600);
     });
   }
