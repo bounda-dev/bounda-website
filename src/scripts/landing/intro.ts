@@ -1,9 +1,10 @@
-// The intro: before the hero enters, the page catches up with the global stream. A ruler of events
-// draws itself from the left edge to the point where the scene's stream has its head, the position
-// riding above it from 000 001 to the head, while the scene and the fonts load. Then the ruler gives
-// way to the scene in the same place and the hero enters in order. Shown once per session, skipped
-// by any input; the `intro` class is set before first paint by the inline script in stage.astro,
-// which also leaves it out for reduced motion.
+// The intro: on a first visit, while the scene loads, the page catches up with the global stream.
+// A ruler of events draws itself from the left edge to the point where the scene's stream will have
+// its head, and the readout counts from 000 001 up to the head. Then the ruler gives way to the scene
+// in the same place. The hero is on screen from the first frame throughout (its entrance is CSS, see
+// [data-enter] in global.css): the intro is the scene's loading state, never a curtain over the page.
+// Shown once per session, skipped by any input; the `intro` class is set before first paint by the
+// inline script in stage.astro, which also leaves it out for reduced motion.
 
 import { formatPosition, HEAD } from "./timeline";
 
@@ -14,42 +15,49 @@ export interface ScreenPoint {
 }
 
 export interface Intro {
-  /** Draws the intro at `now`, its ruler ending at `head`; false once the hero has entered, or with no intro. */
+  /** Draws the intro at `now`, its ruler ending at `head`; false once it has given way to the scene. */
   readonly tick: (now: number, head: ScreenPoint) => boolean;
-  /** Resolves when the hero starts to enter (at once when there is no intro). */
+  /** Resolves when the ruler has reached the head (at once when there is no intro). */
   readonly revealed: Promise<void>;
-  /** How far the page's own chrome is back: 0 during the intro, rising to 1 as the hero enters. */
+  /** How present the readout is: it comes in with the count and stays. */
   readonly presence: (now: number) => number;
+}
+
+export interface Readout {
+  readonly key: HTMLElement;
+  readonly value: HTMLElement;
+  readonly sub: HTMLElement;
 }
 
 export interface IntroArgs {
   readonly root: HTMLElement;
-  /** The ruler and the position riding it. */
+  /** The ruler, in the canvas's frame. */
   readonly stream: HTMLElement;
-  readonly count: HTMLElement;
+  /** The page's readout, which counts during the intro. */
+  readonly readout: Readout;
   /** Settles when the scene is drawn, or has failed, or will not load. */
   readonly ready: Promise<unknown>;
 }
 
-// The hero is the page's largest paint, so the intro is held to about two seconds even when the
-// scene is slow to arrive: past GIVE_UP_MS the hero enters and the scene fades in when it is ready.
-const COUNT_MS = 1200; // the count to the head, when everything is ready in time
-const FINISH_MS = 220; // the last stretch once it is
+// The count takes about a second when everything is ready in time. Past GIVE_UP_MS it finishes anyway
+// and the scene fades in whenever it arrives: the stream is a loading state, not a wait.
+const COUNT_MS = 1100;
+const FINISH_MS = 220;
 const GIVE_UP_MS = 1700;
-const ENTER_MS = 1700; // the longest enter transition, delays included
-const PRESENCE_MS = 600;
+const LEAVE_MS = 1500; // the longest of the page's entrance animations, delays included
+const PRESENCE_MS = 500;
 const SEEN = "bounda-intro";
 
 const easeOut = (t: number): number => 1 - (1 - t) ** 3;
 
 declare global {
   interface Window {
-    /** The inline script's timer that shows the hero if this module never runs. */
+    /** The inline script's timer that takes the intro down if this module never runs. */
     boundaIntroFallback?: number;
   }
 }
 
-export const createIntro = ({ root, stream, count, ready }: IntroArgs): Intro => {
+export const createIntro = ({ root, stream, readout, ready }: IntroArgs): Intro => {
   clearTimeout(window.boundaIntroFallback);
   if (!root.classList.contains("intro")) {
     return { tick: () => false, revealed: Promise.resolve(), presence: () => 1 };
@@ -59,7 +67,6 @@ export const createIntro = ({ root, stream, count, ready }: IntroArgs): Intro =>
   let settled = false;
   let finishFrom: number | null = null;
   let finished = false;
-  let enteredAt = 0;
   let reveal: () => void = () => undefined;
   const revealed = new Promise<void>((resolve) => {
     reveal = resolve;
@@ -71,9 +78,9 @@ export const createIntro = ({ root, stream, count, ready }: IntroArgs): Intro =>
     settled = true;
   });
 
-  // Frames can stop (the tab goes to the background); the hero and the scene must come in regardless.
+  // Frames can stop (the tab goes to the background); the scene must come in regardless.
   setTimeout(() => {
-    if (!finished) enter();
+    if (!finished) leave();
   }, GIVE_UP_MS + 1500);
 
   const skip = (): void => {
@@ -84,16 +91,15 @@ export const createIntro = ({ root, stream, count, ready }: IntroArgs): Intro =>
     addEventListener(type, skip, { once: true, passive: true });
   }
 
-  const enter = (): void => {
+  const leave = (): void => {
     finished = true;
-    enteredAt = performance.now();
     root.classList.add("entering");
     try {
       sessionStorage.setItem(SEEN, "1");
     } catch {
       // Without storage the intro plays again on the next visit.
     }
-    setTimeout(() => root.classList.remove("intro", "entering"), ENTER_MS);
+    setTimeout(() => root.classList.remove("intro", "entering"), LEAVE_MS);
     reveal();
   };
 
@@ -101,24 +107,23 @@ export const createIntro = ({ root, stream, count, ready }: IntroArgs): Intro =>
   let headX = -1;
   let headY = -1;
   let shown = "";
+  const target = formatPosition(HEAD - 1);
   const draw = (fraction: number, head: ScreenPoint): void => {
     headX = headX < 0 ? head.x : headX + (head.x - headX) * 0.2;
     headY = headY < 0 ? head.y : headY + (head.y - headY) * 0.2;
     // The stream's box is the canvas's, so fractions of the scene map onto it exactly.
     const width = stream.clientWidth || innerWidth;
     const height = stream.clientHeight || innerHeight;
-    const x = fraction * headX * width;
-    stream.style.setProperty("--head-x", `${x.toFixed(1)}px`);
-    // The position flies from the cursor like a flag, kept inside the page's margins.
-    const gutter = Math.min(64, Math.max(16, width * 0.04));
-    const flagWidth = count.parentElement?.offsetWidth ?? 0;
-    const flag = Math.max(gutter, Math.min(x + 12, width - gutter - flagWidth));
-    stream.style.setProperty("--count-x", `${flag.toFixed(1)}px`);
+    stream.style.setProperty("--head-x", `${(fraction * headX * width).toFixed(1)}px`);
     stream.style.setProperty("--head-y", `${(headY * height).toFixed(1)}px`);
     const value = formatPosition(1 + (HEAD - 2) * fraction);
     if (value !== shown) {
+      if (!shown) {
+        readout.key.textContent = "Global stream · catching up";
+        readout.sub.textContent = `head ${target}`;
+      }
       shown = value;
-      count.textContent = value;
+      readout.value.textContent = value;
     }
   };
 
@@ -142,13 +147,13 @@ export const createIntro = ({ root, stream, count, ready }: IntroArgs): Intro =>
 
   return {
     revealed,
-    presence: (now) => (enteredAt ? Math.min(1, (now - enteredAt) / PRESENCE_MS) : 0),
+    presence: (now) => Math.min(1, Math.max(0, now - start) / PRESENCE_MS),
     tick(now, head) {
       if (finished) return false;
       const fraction = progress(now);
       if (fraction === null) {
         draw(1, head);
-        enter();
+        leave();
         return false;
       }
       draw(fraction, head);
