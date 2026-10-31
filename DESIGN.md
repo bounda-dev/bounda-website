@@ -98,6 +98,7 @@ How every table of facts is set, in docs, on the landing page and in Studio:
 ## Layout
 
 - Corners square (radius 2px). Structure by hairlines (`--rule`), not by shadows.
+- **Focus is a 2px ring of `--accent`, 3px off the edge.** On a control that sits in a bordered box, the ring stays 3px inside it. The same ring everywhere: landing, docs, Studio.
 - 4px spacing grid; 12 columns; gutter `clamp(16px, 4vw, 64px)`; max width 1312px.
 - Content-led hero, not a full-viewport splash by default.
 
