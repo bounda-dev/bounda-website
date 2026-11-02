@@ -11,7 +11,7 @@
     "lighthouse": "node scripts/lighthouse.mjs"
   },
   "dependencies": {
-    "astro": "7.4.2",
+    "astro": "7.4.4",
     "three": "0.186.1"
   },
   "devDependencies": {
@@ -20,6 +20,6 @@
     "@types/three": "0.186.0",
     "lighthouse": "13.6.0",
     "typescript": "5.9.3",
-    "wrangler": "4.152.0"
+    "wrangler": "4.156.0"
   }
 }
