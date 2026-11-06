@@ -25,7 +25,6 @@ export interface Language {
   readonly docs: string;
   readonly rss: string;
   readonly more: string;
-  readonly contents: string;
   readonly seeItRun: string;
   readonly languages: string;
   readonly translated: string;
@@ -49,7 +48,6 @@ export const LANGUAGES: Record<Locale, Language> = {
     docs: "Read the docs",
     rss: "Follow by RSS",
     more: "More posts",
-    contents: "On this page",
     seeItRun: "See it run in the live demo",
     languages: "Read in",
     translated: "",
@@ -71,7 +69,6 @@ export const LANGUAGES: Record<Locale, Language> = {
     docs: "Lee la documentación",
     rss: "Síguelo por RSS",
     more: "Más posts",
-    contents: "En este post",
     seeItRun: "Míralo funcionar en la demo",
     languages: "Leer en",
     translated: "Traducido del original en inglés.",
@@ -93,7 +90,6 @@ export const LANGUAGES: Record<Locale, Language> = {
     docs: "ドキュメントを読む",
     rss: "RSS で購読",
     more: "ほかの記事",
-    contents: "目次",
     seeItRun: "ライブデモで動きを見る",
     languages: "言語",
     translated: "英語の原文からの翻訳です。",
@@ -115,7 +111,6 @@ export const LANGUAGES: Record<Locale, Language> = {
     docs: "Leia a documentação",
     rss: "Siga por RSS",
     more: "Mais posts",
-    contents: "Neste post",
     seeItRun: "Veja funcionando na demo",
     languages: "Ler em",
     translated: "Traduzido do original em inglês.",

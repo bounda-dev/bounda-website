@@ -15,8 +15,7 @@ interface Props {
 const { article } = Astro.props;
 const { locale, slug, title, description, date, updated, kind, tryIt, draft, locales } = article;
 const text = LANGUAGES[locale];
-const { Content, headings } = await render(article.entry);
-const sections = headings.filter(({ depth }) => depth === 2);
+const { Content } = await render(article.entry);
 const minutes = readingMinutes(article);
 const others = (await articles(locale)).filter((other) => other.slug !== slug).slice(0, 3);
 
@@ -59,8 +58,7 @@ const structuredData = {
   </Fragment>
   <Nav />
   <main id="main-content" class="post">
-    <div class="wrap layout">
-    <article>
+    <article class="wrap column">
       <header class="head">
         <p class="label crumbs">
           <a href={blogPath(locale)}>{text.blog}</a><span aria-hidden="true">/</span>{text.kinds[kind]}
@@ -109,33 +107,6 @@ const structuredData = {
       <svg class="close" viewBox="0 0 35 65" aria-hidden="true"><path d="M25 0h10v65H25v-8H0v-6h25z"></path></svg>
     </article>
 
-    <!-- On a wide screen the reader keeps the outline and a way to try it in view the whole way
-         down; most readers leave before the end, where the full call to action is. -->
-    <aside class="rail" aria-label={text.contents}>
-      <div class="sticky">
-        {
-          sections.length > 0 && (
-            <nav class="toc">
-              <p class="label">{text.contents}</p>
-              <ol>
-                {sections.map(({ slug: id, text: heading }) => (
-                  <li>
-                    <a href={`#${id}`}>{heading}</a>
-                  </li>
-                ))}
-              </ol>
-            </nav>
-          )
-        }
-        <div class="card">
-          <p class="label eyebrow">{text.tryIt}</p>
-          {tryIt && <a class="text-link" href={tryIt.href}>{tryIt.label}</a>}
-          <Install />
-        </div>
-      </div>
-    </aside>
-    </div>
-
     <section class="wrap after" aria-labelledby="try-it">
       <div class="box">
         <p class="label eyebrow" id="try-it">{text.tryIt}</p>
@@ -167,27 +138,6 @@ const structuredData = {
   <Footer />
 </BaseLayout>
 
-<script>
-  // The section being read is the last whose heading has passed a quarter of the way down.
-  const links = [...document.querySelectorAll<HTMLAnchorElement>(".toc a")];
-  const sections = links.flatMap((link) => {
-    const heading = document.getElementById(decodeURIComponent(link.hash.slice(1)));
-    return heading ? [{ link, heading }] : [];
-  });
-  let frame = 0;
-  const update = () => {
-    frame = 0;
-    const line = innerHeight / 4;
-    const current = sections.findLast(({ heading }) => heading.getBoundingClientRect().top < line)?.link;
-    for (const { link } of sections) {
-      if (link === current) link.setAttribute("aria-current", "location");
-      else link.removeAttribute("aria-current");
-    }
-  };
-  addEventListener("scroll", () => (frame ||= requestAnimationFrame(update)), { passive: true });
-  update();
-</script>
-
 <style>
   .post {
     padding: clamp(112px, 16vh, 160px) 0 0;
@@ -199,90 +149,14 @@ const structuredData = {
     padding-bottom: 56px;
   }
 
-  .rail {
-    display: none;
+  /* One centred column for reading, the post and what comes after it alike. */
+  .column,
+  .after {
+    max-width: calc(68ch + 2 * var(--gutter));
   }
 
   .see-it {
     margin-top: 22px;
-  }
-
-  @media (min-width: 1180px) {
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(0, 68ch) 300px;
-      justify-content: space-between;
-      gap: 64px;
-    }
-
-    .rail {
-      display: block;
-    }
-
-    .see-it {
-      display: none;
-    }
-  }
-
-  .sticky {
-    position: sticky;
-    top: 32px;
-    display: flex;
-    flex-direction: column;
-    gap: 36px;
-  }
-
-  .toc ol {
-    margin: 14px 0 0;
-    padding: 0 0 0 14px;
-    list-style: none;
-    border-left: 1px solid var(--rule);
-  }
-
-  .toc li + li {
-    margin-top: 10px;
-  }
-
-  .toc a {
-    display: block;
-    font-size: 0.875rem;
-    line-height: 1.4;
-    color: var(--muted);
-    text-decoration: none;
-    transition: color 0.16s var(--ease);
-  }
-
-  .toc a:hover {
-    color: var(--text);
-  }
-
-  /* The section being read: the text colour and the ochre on the rule beside it. */
-  .toc a[aria-current] {
-    position: relative;
-    color: var(--text);
-  }
-
-  .toc a[aria-current]::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: -15px;
-    width: 1px;
-    background: var(--accent);
-  }
-
-  .card {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    align-items: flex-start;
-    padding-top: 24px;
-    border-top: 1px solid var(--rule);
-  }
-
-  .card :global(.install) {
-    width: 100%;
   }
 
   .head {
