@@ -7,18 +7,26 @@ interface Props {
   readonly description?: string;
   /** Pages that should not be indexed, such as the 404 page. */
   readonly noindex?: boolean;
+  /** A post's own card and dates; the site's card otherwise. */
+  readonly image?: { readonly url: URL; readonly alt: string; readonly type: string };
+  readonly article?: { readonly published: Date; readonly modified?: Date | undefined };
 }
 
 const {
   title = "Bounda — Event sourcing and CQRS for TypeScript",
   description = "Your tables keep the last write. Bounda keeps every change, so any view can be rebuilt from it. Plain TypeScript modules, inferred types, one database.",
   noindex = false,
+  image,
+  article,
 } = Astro.props;
 
 const site = Astro.site ?? new URL("https://bounda.dev");
 const canonicalUrl = new URL(Astro.url.pathname, site);
-const socialImage = new URL("/og.jpg", site);
-const socialImageAlt = "The Bounda symbol as a machined monolith whose foot becomes the global stream, beside the headline: Event sourcing without the ceremony.";
+const socialImage = image?.url ?? new URL("/og.jpg", site);
+const socialImageAlt =
+  image?.alt ??
+  "The Bounda symbol as a machined monolith whose foot becomes the global stream, beside the headline: Event sourcing without the ceremony.";
+const socialImageType = image?.type ?? "image/jpeg";
 ---
 
 <!doctype html>
@@ -34,15 +42,18 @@ const socialImageAlt = "The Bounda symbol as a machined monolith whose foot beco
     {noindex && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={canonicalUrl} />
     <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+    <link rel="alternate" type="application/rss+xml" title="Bounda blog" href="/blog/rss.xml" />
 
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={article ? "article" : "website"} />
+    {article && <meta property="article:published_time" content={article.published.toISOString()} />}
+    {article?.modified && <meta property="article:modified_time" content={article.modified.toISOString()} />}
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:site_name" content="Bounda" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:image" content={socialImage} />
-    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:type" content={socialImageType} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content={socialImageAlt} />
@@ -59,8 +70,8 @@ const socialImageAlt = "The Bounda symbol as a machined monolith whose foot beco
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
 
-    <!-- The scroll position drives the story, so a reload starts it from the top. -->
-    <script is:inline>if ("scrollRestoration" in history) history.scrollRestoration = "manual";</script>
+    <!-- On the home page the scroll position drives the story, so a reload starts it from the top. -->
+    {Astro.url.pathname === "/" && <script is:inline>if ("scrollRestoration" in history) history.scrollRestoration = "manual";</script>}
 
     <!-- The page is static (.still) until this runs: without JavaScript, or with reduced motion, it
          stays a plain page. A mode the visitor chose wins over the system's. Both before first paint. -->

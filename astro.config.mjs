@@ -1,12 +1,15 @@
 import sitemap from "@astrojs/sitemap";
 import { defineConfig, fontProviders } from "astro/config";
+import { codeTheme } from "./src/code-theme.ts";
 
 // Self-hosted at build time, with metric-matched fallbacks. Science Gothic is only ever set at 600,
 // so it is requested at that one weight across the width axis it uses (100% to 125%).
 export default defineConfig({
   site: "https://bounda.dev",
-  // Every link on the page leaves the site (docs, demo, GitHub), so there is nothing to prefetch.
+  // Almost every link leaves the site (docs, demo, GitHub), so there is little to prefetch.
   prefetch: false,
+  // Code in posts takes the same token-coloured theme as the landing page's code.
+  markdown: { shikiConfig: { theme: codeTheme } },
   // The site is rebuilt on every push, so the build is the last change.
   integrations: [sitemap({ lastmod: new Date() })],
   build: {
