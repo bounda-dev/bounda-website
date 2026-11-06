@@ -1,12 +1,12 @@
 ---
 title: The right to be forgotten, in a log that never deletes
 description: Event sourcing keeps every fact forever; the GDPR lets a person ask to be erased. How crypto-shredding makes both true, what it misses, and what Marten, Axon and KurrentDB do instead.
-date: 2026-11-09
+date: 2026-11-06
 kind: essay
 tryIt:
   label: Forget a buyer in the live demo
   href: https://demo.bounda.dev
-draft: true
+draft: false
 ---
 
 Sooner or later an email arrives: *please delete all the data you hold about me*. If your system
