@@ -16,7 +16,13 @@ export default defineConfig({
     processor: satteri({ hastPlugins: [untranslatedCode] }),
   },
   // The site is rebuilt on every push, so the build is the last change.
-  integrations: [sitemap({ lastmod: new Date() })],
+  // A translated post links its other languages in the sitemap too (src/i18n.ts).
+  integrations: [
+    sitemap({
+      lastmod: new Date(),
+      i18n: { defaultLocale: "en", locales: { en: "en", es: "es", ja: "ja", "pt-br": "pt-BR" } },
+    }),
+  ],
   build: {
     inlineStylesheets: "always",
   },

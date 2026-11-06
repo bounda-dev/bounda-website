@@ -1,0 +1,21 @@
+---
+import type { GetStaticPaths } from "astro";
+import { type Article, articles } from "../../../blog";
+import PostPage from "../../../components/blog/post-page.astro";
+import { TRANSLATED_LOCALES } from "../../../i18n";
+
+export const getStaticPaths = (async () =>
+  (
+    await Promise.all(
+      TRANSLATED_LOCALES.map(async (lang) =>
+        (await articles(lang)).map((article) => ({ params: { lang, slug: article.slug }, props: { article } })),
+      ),
+    )
+  ).flat()) satisfies GetStaticPaths;
+
+interface Props {
+  readonly article: Article;
+}
+---
+
+<PostPage article={Astro.props.article} />

@@ -1,18 +1,19 @@
 import rss from "@astrojs/rss";
 import type { APIRoute } from "astro";
-import { AUTHOR, posts } from "../../blog";
+import { AUTHOR, articles } from "../../blog";
+import { LANGUAGES, postPath } from "../../i18n";
 
+// The English posts; a translation is linked from its post, not repeated in the feed.
 export const GET: APIRoute = async ({ site }) =>
   rss({
     title: "Bounda blog",
-    description:
-      "Essays, tutorials and measurements on event sourcing and CQRS in TypeScript, with Bounda as the worked example.",
+    description: LANGUAGES.en.lead,
     site: site ?? "https://bounda.dev",
-    items: (await posts()).map((post) => ({
-      title: post.data.title,
-      description: post.data.description,
-      pubDate: post.data.date,
-      link: `/blog/${post.id}/`,
+    items: (await articles("en")).map((article) => ({
+      title: article.title,
+      description: article.description,
+      pubDate: article.date,
+      link: postPath("en", article.slug),
       author: AUTHOR.name,
     })),
     customData: "<language>en</language>",

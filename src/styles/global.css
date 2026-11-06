@@ -23,6 +23,13 @@ body {
   overflow-x: clip;
 }
 
+/* The brand's faces have no Japanese; a Japanese page sets its text in the system's Japanese face. */
+:lang(ja) {
+  --font-sans: var(--font-ibm-plex-sans), "Hiragino Sans", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
+  --font-display: var(--font-science-gothic), "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+  line-break: strict;
+}
+
 a {
   color: inherit;
 }

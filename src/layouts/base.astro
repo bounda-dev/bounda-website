@@ -7,6 +7,11 @@ interface Props {
   readonly description?: string;
   /** Pages that should not be indexed, such as the 404 page. */
   readonly noindex?: boolean;
+  /** The page's language, BCP 47, and its locale for Open Graph. */
+  readonly lang?: string;
+  readonly ogLocale?: string;
+  /** The same page in every language it exists in, this one included; English is the default. */
+  readonly alternates?: readonly { readonly tag: string; readonly href: string }[];
   /** A post's own card and dates; the site's card otherwise. */
   readonly image?: { readonly url: URL; readonly alt: string; readonly type: string };
   readonly article?: {
@@ -20,6 +25,9 @@ const {
   title = "Bounda — Event sourcing and CQRS for TypeScript",
   description = "Your tables keep the last write. Bounda keeps every change, so any view can be rebuilt from it. Plain TypeScript modules, inferred types, one database.",
   noindex = false,
+  lang = "en",
+  ogLocale = "en_US",
+  alternates = [],
   image,
   article,
 } = Astro.props;
@@ -34,7 +42,7 @@ const socialImageType = image?.type ?? "image/jpeg";
 ---
 
 <!doctype html>
-<html lang="en" class="still">
+<html lang={lang} class="still">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -47,6 +55,8 @@ const socialImageType = image?.type ?? "image/jpeg";
     <link rel="canonical" href={canonicalUrl} />
     <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
     <link rel="alternate" type="application/rss+xml" title="Bounda blog" href="/blog/rss.xml" />
+    {alternates.map(({ tag, href }) => <link rel="alternate" hreflang={tag} href={href} />)}
+    {alternates.filter(({ tag }) => tag === "en").map(({ href }) => <link rel="alternate" hreflang="x-default" href={href} />)}
 
     <meta property="og:type" content={article ? "article" : "website"} />
     {article && <meta property="article:published_time" content={article.published.toISOString()} />}
@@ -56,7 +66,7 @@ const socialImageType = image?.type ?? "image/jpeg";
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:site_name" content="Bounda" />
-    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale" content={ogLocale} />
     <meta property="og:image" content={socialImage} />
     <meta property="og:image:type" content={socialImageType} />
     <meta property="og:image:width" content="1200" />

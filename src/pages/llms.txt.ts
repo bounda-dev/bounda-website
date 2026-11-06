@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
-import { posts } from "../blog";
+import { articles } from "../blog";
+import { postPath } from "../i18n";
 
 // What an assistant reads first about Bounda (llmstxt.org): what it is, where the docs are, and the
 // posts, so an answer about event sourcing in TypeScript can cite them.
@@ -18,8 +19,8 @@ export const GET: APIRoute = async ({ site }) => {
     "",
     "## Blog",
     "",
-    ...(await posts()).map(
-      (post) => `- [${post.data.title}](${new URL(`/blog/${post.id}/`, base).href}): ${post.data.description}`,
+    ...(await articles("en")).map(
+      (article) => `- [${article.title}](${new URL(postPath("en", article.slug), base).href}): ${article.description}`,
     ),
     "",
     "## Optional",

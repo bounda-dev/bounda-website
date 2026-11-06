@@ -36,6 +36,13 @@ Posts are Markdown files in `src/content/blog/`, one per post, named as their ad
 `draft: true` shows on `pnpm dev` and is left out of the build, so it can be merged before it is
 published. The blog also feeds `/blog/rss.xml` and `/llms.txt`.
 
+Each post is translated into Spanish, Japanese and Brazilian Portuguese when it is published:
+`src/content/translations/<locale>/<slug>.md` holds the title, the description and the body in
+that language, and takes the date, the kind and the draft flag from the English post, which is
+the original. It is served at `/<locale>/blog/<slug>/`, with its own card, `hreflang` links to
+every version and a note linking the original. The interface strings and the languages live in
+`src/i18n.ts`. A translation whose original does not exist fails the build.
+
 ## Keeping the two sites coherent
 
 [`DESIGN.md`](DESIGN.md) is the design system both sites follow: palette, type, logo, the ledger
