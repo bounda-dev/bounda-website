@@ -11,6 +11,7 @@
     "lighthouse": "node scripts/lighthouse.mjs"
   },
   "dependencies": {
+    "@astrojs/markdown-satteri": "0.4.6",
     "@astrojs/rss": "4.0.19",
     "astro": "7.4.4",
     "three": "0.186.1"

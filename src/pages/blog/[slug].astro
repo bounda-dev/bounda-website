@@ -48,7 +48,7 @@ const structuredData = {
   title={`${title} — Bounda`}
   description={description}
   image={{ url: image, alt: `${title}. ${description}`, type: "image/png" }}
-  article={{ published: date, modified: updated }}
+  article={{ published: date, modified: updated, author: AUTHOR.name }}
 >
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
@@ -64,7 +64,7 @@ const structuredData = {
         <h1 class="display">{title}</h1>
         <p class="lead">{description}</p>
         <p class="meta">
-          <span>By <a href={AUTHOR.url}>{AUTHOR.name}</a></span>
+          <span class="byline">By <a href={AUTHOR.url} rel="author">{AUTHOR.name}</a></span>
           <time datetime={date.toISOString()}>{formatDate(date)}</time>
           <span>{minutes} min read</span>
         </p>
