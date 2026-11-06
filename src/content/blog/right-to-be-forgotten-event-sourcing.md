@@ -154,9 +154,6 @@ is selling something.
 - **Whether a ciphertext without its key is still personal data** is a legal question. Verraes
   raises it; I am not going to answer it here.
 
-The rest of the rights a framework can carry, such as access, portability, retention and
-restriction of processing, are what Bounda's next minor release is about.
-
 ## See it happen
 
 The [live demo](https://demo.bounda.dev) is a theatre box office running on Bounda, one Durable

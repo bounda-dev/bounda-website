@@ -153,9 +153,6 @@ disser o contrário está vendendo alguma coisa.
 - **Se um texto cifrado sem a chave ainda é dado pessoal** é uma questão jurídica. Verraes a
   levanta; eu não vou respondê-la aqui.
 
-O resto dos direitos que um framework pode trazer, como acesso, portabilidade, prazos de retenção
-e restrição do tratamento, é o tema da próxima versão menor do Bounda.
-
 ## Veja acontecer
 
 A [demo](https://demo.bounda.dev) é a bilheteria de um teatro rodando no Bounda, com um Durable
