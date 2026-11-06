@@ -120,6 +120,7 @@ It is not a marketing website. It answers what Bounda is and why; anything about
 - **Reading first.** Text at a 68ch measure, IBM Plex at 17px / 1.7; headings in display type at 104%; code in the same token-coloured theme as the landing page.
 - **The ledger grammar** for the index (position first, in mono and muted; a hairline between entries) and for tables in a post.
 - **The ⅃ closes a post**, in ochre, at the bottom-right of its last line.
+- **A rail on wide screens.** The column keeps the grid's left edge; beside it a sticky rail holds the post's outline, marking the section being read, and a compact way to try it (the demo scene and the install command), since most readers leave before the end. On narrower screens a link to the demo sits under the byline and the full call to action stays at the end; nothing pops up or sticks to the screen.
 - **Every post has its card**, drawn at build in Basalt as the docs' cards are.
 - **Four languages.** Each post is read in English, Spanish, Japanese and Brazilian Portuguese; a translation says so and links the original. Code is never translated (`translate="no"`). Japanese, which the brand's faces do not cover, is set in the system's Japanese face (Hiragino Sans, Noto Sans JP), and its cards in Noto Sans JP.
 
