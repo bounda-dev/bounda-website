@@ -113,6 +113,17 @@ It is not a marketing website. It answers what Bounda is and why; anything about
 - **The hero is painted on the first frame.** On a first visit it settles into place from a few pixels below, in order, but it never fades in or waits: the intro (the stream catching up, the readout counting to the head) is the scene's loading state, drawn in the stage beside the copy, and gives way to the scene when it is ready or after about two seconds.
 - **Inspirations, by feeling and not by copying:** Vercel (clarity, spacing), Resend (confidence, restraint), Linear (focus, calm UI), EventStoreDB's docs (technical seriousness), and scroll-driven product films (one manufactured object that plays its own mechanism as you scroll).
 
+## The blog
+
+`bounda.dev/blog` carries the "why" the landing page cannot hold: essays, tutorials, honest comparisons and measurements, each one ending where the reader can see the idea run (a scene of the demo, a guide) and `npm create bounda@latest`.
+
+- **Reading first.** Text at a 68ch measure, IBM Plex at 17px / 1.7; headings in display type at 104%; code in the same token-coloured theme as the landing page.
+- **The ledger grammar** for the index (position first, in mono and muted; a hairline between entries) and for tables in a post.
+- **The ⅃ closes a post**, in ochre, at the bottom-right of its last line.
+- **One clean column.** A post is a single centred column at the reading measure, with nothing beside it. A link to see it run sits under the byline; the full call to action comes at the end; nothing pops up or sticks to the screen.
+- **Every post has its card**, drawn at build in Basalt as the docs' cards are.
+- **Four languages.** Each post is read in English, Spanish, Japanese and Brazilian Portuguese; a translation says so and links the original. Code is never translated (`translate="no"`). Japanese, which the brand's faces do not cover, is set in the system's Japanese face (Hiragino Sans, Noto Sans JP), and its cards in Noto Sans JP.
+
 ## Voice
 
 Plain, technical, short. Active voice. The vocabulary of the product: event store, global stream, projection, read model, policy, process manager (never "log" for the store, never "saga").

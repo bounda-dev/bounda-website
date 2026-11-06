@@ -1,0 +1,14 @@
+---
+import type { GetStaticPaths } from "astro";
+import { type Article, articles } from "../../blog";
+import PostPage from "../../components/blog/post-page.astro";
+
+export const getStaticPaths = (async () =>
+  (await articles("en")).map((article) => ({ params: { slug: article.slug }, props: { article } }))) satisfies GetStaticPaths;
+
+interface Props {
+  readonly article: Article;
+}
+---
+
+<PostPage article={Astro.props.article} />

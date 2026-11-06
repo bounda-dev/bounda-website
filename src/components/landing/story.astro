@@ -10,22 +10,22 @@
       <article class="caption" data-window="0.62,1.55">
         <p class="kicker">Command handler</p>
         <h2 class="display">A command asks.</h2>
-        <p><code>PlaceOrder</code> arrives with a payload its schema checks. The handler reads the order's current state and decides.</p>
+        <p><code translate="no">PlaceOrder</code> arrives with a payload its schema checks. The handler reads the order's current state and decides.</p>
       </article>
       <article class="caption" data-window="1.6,2.5">
         <p class="kicker">Event store</p>
         <h2 class="display">The answer is a fact.</h2>
-        <p><code>OrderPlaced</code> is appended to the global stream at position 4,212. Facts are never edited or deleted.</p>
+        <p><code translate="no">OrderPlaced</code> is appended to the global stream at position 4,212. Facts are never edited or deleted.</p>
       </article>
       <article class="caption" data-window="2.55,3.38">
         <p class="kicker">Evolve</p>
         <h2 class="display">State is a fold.</h2>
-        <p>The global stream interleaves every aggregate. <code>evolve</code> folds only order/7f3a's events, in order: created, item added, placed.</p>
+        <p>The global stream interleaves every aggregate. <code translate="no">evolve</code> folds only order/7f3a's events, in order: created, item added, placed.</p>
       </article>
       <article class="caption" data-window="3.42,4.26">
         <p class="kicker">Projection</p>
         <h2 class="display">Facts become rows.</h2>
-        <p>The <code>order-placed</code> projection upserts one row into the <code>orders</code> read model.</p>
+        <p>The <code translate="no">order-placed</code> projection upserts one row into the <code translate="no">orders</code> read model.</p>
       </article>
       <article class="caption" data-window="4.3,5.12">
         <p class="kicker">Read model</p>

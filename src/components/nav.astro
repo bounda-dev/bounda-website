@@ -10,8 +10,9 @@ import ThemeToggle from "./theme-toggle.astro";
   <nav aria-label="Primary" data-enter style="--enter-delay: 0.42s">
     <ul>
       <li><a class="link" href="https://docs.bounda.dev/getting-started/">Docs</a></li>
+      <li><a class="link" href="/blog/">Blog</a></li>
       <li class="wide"><a class="link" href="https://demo.bounda.dev">Demo</a></li>
-      <li><a class="link" href="https://github.com/bounda-dev/bounda">GitHub</a></li>
+      <li class="wide"><a class="link" href="https://github.com/bounda-dev/bounda">GitHub</a></li>
       <li><ThemeToggle /></li>
     </ul>
   </nav>
@@ -93,7 +94,8 @@ import ThemeToggle from "./theme-toggle.astro";
       height: 20px;
     }
 
-    /* The hero's call to action already offers the demo, and the bar has no room for it. */
+    /* The bar has room for the docs and the blog only; the hero's call to action and the footer
+       offer the demo and GitHub. */
     .wide {
       display: none;
     }

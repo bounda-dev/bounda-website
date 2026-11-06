@@ -63,10 +63,10 @@ export const project = async ({ event, table }: Projection.Args) => {
       <p class="label">The code</p>
       <h2 class="display">Three files. Their place and name are the declaration.</h2>
       <p>
-        A command handler decides, an event becomes the state, a projection writes a row. <code>bounda generate</code> reads the folders and
+        A command handler decides, an event becomes the state, a projection writes a row. <code translate="no">bounda generate</code> reads the folders and
         infers every type, so there is no registry to keep in sync.
       </p>
-      <pre class="tree">app/
+      <pre class="tree" translate="no">app/
 ├─ domain/order/
 │  ├─ commands/<b>place-order.ts</b>
 │  └─ <b>order-placed.ts</b>
@@ -81,7 +81,7 @@ export const project = async ({ event, table }: Projection.Args) => {
               <b>{file.title}</b>
               <span>{file.role}</span>
             </figcaption>
-            <Code code={file.code} lang="ts" theme={codeTheme} />
+            <Code code={file.code} lang="ts" theme={codeTheme} translate="no" />
           </figure>
         ))
       }
