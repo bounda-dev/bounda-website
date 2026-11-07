@@ -1,6 +1,6 @@
 ---
 import { LANGUAGES, type Locale } from "../i18n";
-import { PRIVACY, privacyPath } from "../privacy";
+import { NOTE, PRIVACY_PATH } from "../privacy";
 
 // The newsletter's sign-up: a plain form posted to the site's own Worker, which mails a
 // confirmation link (double opt-in) through Resend; each new post of the English feed is then sent
@@ -15,7 +15,7 @@ interface Props {
 
 const { locale = "en", id = "newsletter" } = Astro.props;
 const text = LANGUAGES[locale].newsletter;
-const privacy = PRIVACY[locale];
+const note = NOTE[locale];
 ---
 
 <form class="subscribe" action={NEWSLETTER} method="post" aria-labelledby={`${id}-heading`}>
@@ -36,7 +36,7 @@ const privacy = PRIVACY[locale];
     />
     <button type="submit">{text.subscribe}</button>
   </div>
-  <p class="note">{privacy.note} <a href={privacyPath(locale)}>{privacy.link}</a></p>
+  <p class="note">{note.text} <a href={PRIVACY_PATH} hreflang="en">{note.link}</a></p>
 </form>
 
 <style>

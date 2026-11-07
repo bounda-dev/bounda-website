@@ -57,7 +57,7 @@ export const LANGUAGES: Record<Locale, Language> = {
     original: "",
     newsletter: {
       heading: "Newsletter",
-      lead: "Each new post by email, the day it is published. One email per post, and nothing else.",
+      lead: "Each new post by email. Nothing else.",
       email: "Email address",
       subscribe: "Subscribe",
     },
@@ -81,7 +81,7 @@ export const LANGUAGES: Record<Locale, Language> = {
     original: "Leer el original",
     newsletter: {
       heading: "Newsletter",
-      lead: "Cada post nuevo por email, el día que se publica. Un email por post, y nada más.",
+      lead: "Cada post nuevo por email. Nada más.",
       email: "Dirección de email",
       subscribe: "Suscribirme",
     },
@@ -105,7 +105,7 @@ export const LANGUAGES: Record<Locale, Language> = {
     original: "原文を読む",
     newsletter: {
       heading: "ニュースレター",
-      lead: "新しい記事を公開日にメールでお届けします。1 記事につき 1 通、それ以外は送りません。",
+      lead: "新しい記事をメールで。それ以外は送りません。",
       email: "メールアドレス",
       subscribe: "購読する",
     },
@@ -129,7 +129,7 @@ export const LANGUAGES: Record<Locale, Language> = {
     original: "Ler o original",
     newsletter: {
       heading: "Newsletter",
-      lead: "Cada post novo por email, no dia em que é publicado. Um email por post, e nada mais.",
+      lead: "Cada post novo por email. Nada mais.",
       email: "Endereço de email",
       subscribe: "Inscrever-me",
     },
