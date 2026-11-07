@@ -5,7 +5,7 @@ date: 2026-11-06
 kind: essay
 tryIt:
   label: Forget a buyer in the live demo
-  href: https://demo.bounda.dev
+  href: https://demo.bounda.dev/?scene=forget
 draft: false
 ---
 
