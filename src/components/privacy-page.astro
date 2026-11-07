@@ -1,0 +1,142 @@
+---
+import { formatDate, LANGUAGES, LOCALES, type Locale } from "../i18n";
+import BaseLayout from "../layouts/base.astro";
+import { PRIVACY, privacyPath, UPDATED } from "../privacy";
+import "../styles/prose.css";
+import Footer from "./footer.astro";
+import Nav from "./nav.astro";
+
+interface Props {
+  readonly locale: Locale;
+}
+
+const { locale } = Astro.props;
+const text = PRIVACY[locale];
+const language = LANGUAGES[locale];
+const site = Astro.site ?? new URL("https://bounda.dev");
+const alternates = LOCALES.map((other) => ({ tag: LANGUAGES[other].tag, href: new URL(privacyPath(other), site).href }));
+---
+
+<BaseLayout title={`${text.title} — Bounda`} description={text.lead} lang={language.tag} ogLocale={language.ogLocale} alternates={alternates}>
+  <Nav />
+  <main id="main-content" class="privacy">
+    <article class="wrap column">
+      <header class="head">
+        <h1 class="display">{text.title}</h1>
+        <p class="lead">{text.lead}</p>
+        <p class="meta">
+          {text.updated} <time datetime={UPDATED.toISOString().slice(0, 10)}>{formatDate(locale, UPDATED)}</time>
+        </p>
+        <nav class="languages" aria-label={language.languages}>
+          <span class="label">{language.languages}</span>
+          <ul>
+            {
+              LOCALES.map((other) => (
+                <li>
+                  <a
+                    href={privacyPath(other)}
+                    hreflang={LANGUAGES[other].tag}
+                    lang={LANGUAGES[other].tag}
+                    aria-current={other === locale ? "page" : undefined}
+                  >
+                    {LANGUAGES[other].name}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+      </header>
+      <div class="prose">
+        {
+          text.sections.map((section) => (
+            <section>
+              <h2>{section.heading}</h2>
+              {section.list ? (
+                <ul>
+                  {section.body.map((item) => (
+                    <li set:html={item} />
+                  ))}
+                </ul>
+              ) : (
+                section.body.map((paragraph) => <p set:html={paragraph} />)
+              )}
+            </section>
+          ))
+        }
+      </div>
+    </article>
+  </main>
+  <Footer />
+</BaseLayout>
+
+<style>
+  .privacy {
+    padding: clamp(112px, 16vh, 160px) 0 clamp(80px, 12vh, 128px);
+  }
+
+  .column {
+    max-width: calc(68ch + 2 * var(--gutter));
+  }
+
+  .head {
+    max-width: 68ch;
+    margin-bottom: 40px;
+  }
+
+  h1 {
+    margin: 0 0 22px;
+    font-size: clamp(2.1rem, 1.3rem + 2.8vw, 3.6rem);
+    line-height: 1.02;
+    letter-spacing: -0.012em;
+  }
+
+  .lead {
+    margin: 0 0 26px;
+    font-size: 1.1875rem;
+    line-height: 1.55;
+    color: var(--muted);
+  }
+
+  .meta {
+    margin: 0;
+    padding-top: 18px;
+    border-top: 1px solid var(--rule);
+    font: 400 0.8125rem/1.4 var(--font-mono);
+    color: var(--muted);
+  }
+
+  .languages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    align-items: baseline;
+    margin-top: 14px;
+  }
+
+  .languages ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.875rem;
+  }
+
+  .languages a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .languages a:hover,
+  .languages a[aria-current="page"] {
+    color: var(--text);
+  }
+
+  .languages a[aria-current="page"] {
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-underline-offset: 4px;
+  }
+</style>

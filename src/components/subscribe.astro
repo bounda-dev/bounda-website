@@ -1,5 +1,6 @@
 ---
 import { LANGUAGES, type Locale } from "../i18n";
+import { PRIVACY, privacyPath } from "../privacy";
 
 // The newsletter's sign-up: a plain form posted to Buttondown, which mails a confirmation link
 // (double opt-in) and sends each new post from the English feed, /blog/rss.xml. No script, no
@@ -14,6 +15,7 @@ interface Props {
 
 const { locale = "en", id = "newsletter" } = Astro.props;
 const text = LANGUAGES[locale].newsletter;
+const privacy = PRIVACY[locale];
 ---
 
 <form class="subscribe" action={NEWSLETTER} method="post" aria-labelledby={`${id}-heading`}>
@@ -35,7 +37,7 @@ const text = LANGUAGES[locale].newsletter;
     <input type="hidden" name="embed" value="1" />
     <button type="submit">{text.subscribe}</button>
   </div>
-  <p class="note">{text.note}</p>
+  <p class="note">{privacy.note} <a href={privacyPath(locale)}>{privacy.link}</a></p>
 </form>
 
 <style>
@@ -70,6 +72,10 @@ const text = LANGUAGES[locale].newsletter;
   .note {
     font-size: 0.8125rem;
     line-height: 1.5;
+  }
+
+  .note a {
+    color: var(--accent-text);
   }
 
   /* The same box as the install command: a hairline, the surface, a label-set button at the end. */
