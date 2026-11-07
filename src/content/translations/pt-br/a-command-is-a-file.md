@@ -124,8 +124,9 @@ Rode o gerador em modo watch e os tipos acompanham você a cada vez que salva.
 ### A exceção para cada não
 
 Uma rejeição é uma resposta, não um fato: nada é guardado para o comprador que pediu um lugar a
-mais. Quem chama recebe `rejected: "LimitReached"`, tipado, com a mensagem escrita ao lado do
-motivo. Quando o negócio quer, sim, lembrar uma recusa, ela passa a ser um evento, e
+mais. Quem chama recebe um erro com `rejected: "LimitReached"`, um dos códigos que o comando
+declara, e uma mensagem escrita ao lado do motivo. Quando o negócio quer, sim, lembrar uma recusa,
+ela passa a ser um evento, e
 [Not every no is a fact](https://docs.bounda.dev/concepts/rejection-or-event/) traça essa linha.
 
 ### A checagem de null que você esqueceu
@@ -145,9 +146,9 @@ que, de outro jeito, você encontraria em produção.
 
 ## De onde vem o formato
 
-Se isso parece familiar, é o
-[route module](https://reactrouter.com/start/framework/route-module) do React Router: um arquivo
-de exports nomeados, com tipos gerados ao lado.
+O React Router ensinou muitos devs de TypeScript a escrever uma rota como um
+[arquivo de exports nomeados](https://reactrouter.com/start/framework/route-module), com tipos
+gerados ao lado:
 
 ```tsx
 // app/routes/product.tsx
@@ -158,17 +159,27 @@ export function loader({ params }: Route.LoaderArgs) {
 }
 ```
 
-O Bounda dá um passo a mais: o React Router lista as rotas em `app/routes.ts`, e o Bounda lê a
-própria pasta. Se você já escreveu um app com React Router, já consegue ler um app com Bounda.
+Pegou porque nada ali é fiação: você escreve o que a rota faz, e o framework resolve o resto. O
+Bounda leva isso ao domínio, e dá um passo a mais: o React Router lista as rotas em
+`app/routes.ts`, o Bounda lê a pasta.
 
-Outros frameworks fizeram outras escolhas, por bons motivos. No
+## Por que funções, e não classes
+
+Os frameworks de event sourcing já consolidados modelam o agregado como uma classe: uma classe
+anotada no
 [Axon](https://docs.axoniq.io/axon-framework-reference/5.4/commands/entities/event-sourced-entity/),
-o espetáculo é uma classe anotada, e o mesmo handler pode rodar atrás de um command bus
-distribuído. No Marten com
-[Wolverine](https://wolverinefx.net/guide/durability/marten/event-sourcing.html), o handler
-é uma função pura muito parecida com esta, com documentos e eventos numa só transação PostgreSQL.
-Nos dois, você escreve a classe de estado e transforma um não numa exceção, e em troca ganha essas
-coisas.
+uma classe simples dobrada por métodos `Apply` no
+[Marten](https://martendb.io/events/projections/aggregate-projections.html). É um design sólido,
+comprovado ao longo de anos, e é o que permite ao Axon rodar o mesmo handler numa frota de
+serviços. Para um app TypeScript, porém, funções em arquivos dão três coisas que uma classe não dá:
+
+- **Um estado que não pode se desviar dos eventos.** Ele é o que os eventos devolvem, então não há
+  uma segunda declaração para manter em sincronia à mão.
+- **Um não que faz parte do contrato.** Os códigos são declarados com o comando e tipados:
+  `reject` só aceita esses, e uma policy que despacha o comando os recebe de volta como um valor
+  sobre o qual decidir.
+- **Um app conhecido antes de rodar.** O gerador lê nomes, não código, então um arquivo fora do
+  lugar falha quando você salva, não quando o app sobe.
 
 ## Quanto custa
 

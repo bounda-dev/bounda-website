@@ -110,7 +110,7 @@ events.orderPlaced;   // error: not an event of the show
 
 ### 「いいえ」ごとの例外
 
-拒否は答えであって、事実ではありません。一席多く求めた購入者については何も保存されません。呼び出し側は型付きの `rejected: "LimitReached"` を受け取り、メッセージは理由のすぐ隣に書かれています。ビジネスとして拒否を記憶したい場合、それは代わりにイベントになります。その線引きは [Not every no is a fact](https://docs.bounda.dev/concepts/rejection-or-event/)(英語)が扱っています。
+拒否は答えであって、事実ではありません。一席多く求めた購入者については何も保存されません。呼び出し側が受け取るのは、コマンドが宣言しているコードの一つである `rejected: "LimitReached"` を持つエラーと、理由のすぐ隣に書かれたメッセージです。ビジネスとして拒否を記憶したい場合、それは代わりにイベントになります。その線引きは [Not every no is a fact](https://docs.bounda.dev/concepts/rejection-or-event/)(英語)が扱っています。
 
 ### 忘れていた null チェック
 
@@ -126,7 +126,7 @@ hold.seats;           // error: 'hold' is possibly 'null'
 
 ## この形はどこから来たか
 
-見覚えがあるなら、それは React Router の[ルートモジュール](https://reactrouter.com/start/framework/route-module)です。名前付きエクスポートのファイルと、その隣に生成された型。
+React Router は多くの TypeScript 開発者に、ルートを[名前付きエクスポートのファイル](https://reactrouter.com/start/framework/route-module)として、その隣に生成された型を置いて書くことを教えました。
 
 ```tsx
 // app/routes/product.tsx
@@ -137,9 +137,15 @@ export function loader({ params }: Route.LoaderArgs) {
 }
 ```
 
-Bounda はもう一歩進みます。React Router は `app/routes.ts` にルートを列挙しますが、Bounda はフォルダーそのものを読みます。React Router のアプリを書いたことがあれば、Bounda のアプリはもう読めます。
+これが広まったのは、配線が一つもないからです。ルートが何をするかを書けば、残りはフレームワークが引き受けます。Bounda はそれをドメインに持ち込み、さらに一歩進みます。React Router は `app/routes.ts` にルートを列挙しますが、Bounda はフォルダーを読みます。
 
-ほかのフレームワークは、もっともな理由から別の選択をしています。[Axon](https://docs.axoniq.io/axon-framework-reference/5.4/commands/entities/event-sourced-entity/) では公演はアノテーション付きのクラスで、同じハンドラーが分散コマンドバスの向こう側でも動けます。Marten と [Wolverine](https://wolverinefx.net/guide/durability/marten/event-sourcing.html) の組み合わせでは、ハンドラーはこれにとても近い純粋関数で、ドキュメントとイベントが一つの PostgreSQL トランザクションに収まります。どちらでも状態クラスは自分で書き、「いいえ」は例外にします。その代わりに、いま挙げたものが手に入ります。
+## なぜクラスではなく関数なのか
+
+定評あるイベントソーシングのフレームワークは、集約をクラスとしてモデル化します。[Axon](https://docs.axoniq.io/axon-framework-reference/5.4/commands/entities/event-sourced-entity/) ではアノテーション付きのクラス、[Marten](https://martendb.io/events/projections/aggregate-projections.html) では `Apply` メソッドで畳み込まれる素のクラスです。何年もかけて実証されてきた堅実な設計で、Axon が同じハンドラーをサービス群全体で動かせるのもこの設計のおかげです。それでも、一つの TypeScript アプリにとっては、ファイルに置いた関数がクラスにはない三つのものをもたらします。
+
+- **イベントからずれようのない状態。** 状態はイベントが返すものなので、手作業で同期させ続けなければならない二つ目の宣言がありません。
+- **契約の一部である「いいえ」。** コードはコマンドと一緒に宣言され、型が付きます。`reject` はそれらしか受け付けず、コマンドをディスパッチするポリシーは、それらを分岐に使える値として受け取ります。
+- **動かす前からわかっているアプリ。** ジェネレーターが読むのはコードではなく名前なので、置き場所を間違えたファイルは、アプリの起動時ではなく保存した時点で失敗します。
 
 ## 代償
 

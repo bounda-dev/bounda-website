@@ -127,9 +127,9 @@ Run the generator in watch mode and the types follow you as you save.
 ### The exception for every no
 
 A rejection is a reply, not a fact: nothing is stored for the buyer who asked for one seat too
-many. The caller gets `rejected: "LimitReached"`, typed, with the message written next to the
-reason. When the business does want to remember a refusal, it is an event instead, and
-[Not every no is a fact](https://docs.bounda.dev/concepts/rejection-or-event/) draws that line.
+many. The caller gets an error with `rejected: "LimitReached"`, one of the codes the command
+declares, and a message written next to the reason. When the business does want to remember a
+refusal, it is an event instead, and [Not every no is a fact](https://docs.bounda.dev/concepts/rejection-or-event/) draws that line.
 
 ### The null check you forgot
 
@@ -148,9 +148,9 @@ would otherwise find in production.
 
 ## Where the shape comes from
 
-If this looks familiar, it is React Router's
-[route module](https://reactrouter.com/start/framework/route-module): a file of named exports,
-with generated types next to it.
+React Router taught a lot of TypeScript developers to write a route as a
+[file of named exports](https://reactrouter.com/start/framework/route-module), with generated
+types next to it:
 
 ```tsx
 // app/routes/product.tsx
@@ -161,16 +161,26 @@ export function loader({ params }: Route.LoaderArgs) {
 }
 ```
 
-Bounda takes one more step: React Router lists its routes in `app/routes.ts`, and Bounda reads the
-folder itself. If you have written a React Router app, you can already read a Bounda one.
+It caught on because nothing in it is wiring: you write what the route does, and the framework
+works out the rest. Bounda brings that to the domain, and goes one step further: React Router
+lists its routes in `app/routes.ts`, Bounda reads the folder.
 
-Other frameworks made other choices, for good reasons. In
-[Axon](https://docs.axoniq.io/axon-framework-reference/5.4/commands/entities/event-sourced-entity/)
-the show is an annotated class, and the same handler can run behind a distributed command bus. In
-Marten with [Wolverine](https://wolverinefx.net/guide/durability/marten/event-sourcing.html) the
-handler is a pure function very close to this one, with documents and events in one PostgreSQL
-transaction. In both you write the state class and turn a no into an exception, and get those
-things back in exchange.
+## Why functions, not classes
+
+The established event sourcing frameworks model the aggregate as a class: an annotated one in
+[Axon](https://docs.axoniq.io/axon-framework-reference/5.4/commands/entities/event-sourced-entity/),
+a plain one folded by `Apply` methods in [Marten](https://martendb.io/events/projections/aggregate-projections.html).
+It is a sound design, proven over years, and it is what lets Axon run the same handler across a
+fleet of services. For one TypeScript app, though, functions in files give you three things a
+class does not:
+
+- **State that cannot drift from the events.** It is what the events return, so there is no
+  second declaration to keep in sync by hand.
+- **A no that is part of the contract.** The codes are declared with the command and typed:
+  `reject` takes only those, and a policy that dispatches the command gets them back as a value
+  it can switch on.
+- **An app known before it runs.** The generator reads names, not code, so a misplaced file
+  fails when you save it, not when the app boots.
 
 ## What it costs
 
