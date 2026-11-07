@@ -20,9 +20,6 @@ export interface Language {
   readonly empty: string;
   readonly by: string;
   readonly minutes: (count: number) => string;
-  readonly tryIt: string;
-  readonly scaffold: string;
-  readonly docs: string;
   readonly rss: string;
   readonly more: string;
   readonly seeItRun: string;
@@ -52,9 +49,6 @@ export const LANGUAGES: Record<Locale, Language> = {
     empty: "The first post is on its way.",
     by: "By",
     minutes: (count) => `${count} min read`,
-    tryIt: "Try it",
-    scaffold: "One command scaffolds a working app: an aggregate, a read model and a test that already passes.",
-    docs: "Read the docs",
     rss: "Follow by RSS",
     more: "More posts",
     seeItRun: "See it run in the live demo",
@@ -63,7 +57,7 @@ export const LANGUAGES: Record<Locale, Language> = {
     original: "",
     newsletter: {
       heading: "Newsletter",
-      lead: "Each new post by email, the day it is published. One email per post, in English, and nothing else.",
+      lead: "Each new post by email, the day it is published. One email per post, and nothing else.",
       email: "Email address",
       subscribe: "Subscribe",
     },
@@ -79,9 +73,6 @@ export const LANGUAGES: Record<Locale, Language> = {
     empty: "El primer post está en camino.",
     by: "Por",
     minutes: (count) => `${count} min de lectura`,
-    tryIt: "Pruébalo",
-    scaffold: "Un comando genera una app que funciona: un agregado, un read model y un test que ya pasa.",
-    docs: "Lee la documentación",
     rss: "Síguelo por RSS",
     more: "Más posts",
     seeItRun: "Míralo funcionar en la demo",
@@ -90,7 +81,7 @@ export const LANGUAGES: Record<Locale, Language> = {
     original: "Leer el original",
     newsletter: {
       heading: "Newsletter",
-      lead: "Cada post nuevo por email, el día que se publica. Un email por post, en inglés, y nada más.",
+      lead: "Cada post nuevo por email, el día que se publica. Un email por post, y nada más.",
       email: "Dirección de email",
       subscribe: "Suscribirme",
     },
@@ -106,9 +97,6 @@ export const LANGUAGES: Record<Locale, Language> = {
     empty: "最初の記事を準備中です。",
     by: "著者",
     minutes: (count) => `${count} 分で読めます`,
-    tryIt: "試してみる",
-    scaffold: "コマンドひとつで動くアプリができます。集約、リードモデル、そして最初から通るテスト。",
-    docs: "ドキュメントを読む",
     rss: "RSS で購読",
     more: "ほかの記事",
     seeItRun: "ライブデモで動きを見る",
@@ -117,7 +105,7 @@ export const LANGUAGES: Record<Locale, Language> = {
     original: "原文を読む",
     newsletter: {
       heading: "ニュースレター",
-      lead: "新しい記事を公開日にメールでお届けします。1 記事につき 1 通、英語で、それ以外は送りません。",
+      lead: "新しい記事を公開日にメールでお届けします。1 記事につき 1 通、それ以外は送りません。",
       email: "メールアドレス",
       subscribe: "購読する",
     },
@@ -133,9 +121,6 @@ export const LANGUAGES: Record<Locale, Language> = {
     empty: "O primeiro post está a caminho.",
     by: "Por",
     minutes: (count) => `${count} min de leitura`,
-    tryIt: "Experimente",
-    scaffold: "Um comando gera um app que funciona: um agregado, um read model e um teste que já passa.",
-    docs: "Leia a documentação",
     rss: "Siga por RSS",
     more: "Mais posts",
     seeItRun: "Veja funcionando na demo",
@@ -144,7 +129,7 @@ export const LANGUAGES: Record<Locale, Language> = {
     original: "Ler o original",
     newsletter: {
       heading: "Newsletter",
-      lead: "Cada post novo por email, no dia em que é publicado. Um email por post, em inglês, e nada mais.",
+      lead: "Cada post novo por email, no dia em que é publicado. Um email por post, e nada mais.",
       email: "Endereço de email",
       subscribe: "Inscrever-me",
     },

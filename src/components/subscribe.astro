@@ -2,10 +2,10 @@
 import { LANGUAGES, type Locale } from "../i18n";
 import { PRIVACY, privacyPath } from "../privacy";
 
-// The newsletter's sign-up: a plain form posted to Buttondown, which mails a confirmation link
-// (double opt-in) and sends each new post from the English feed, /blog/rss.xml. No script, no
-// iframe: the reader lands on Buttondown's page to confirm, and the site loads nothing of theirs.
-const NEWSLETTER = "https://buttondown.com/api/emails/embed-subscribe/bounda";
+// The newsletter's sign-up: a plain form posted to the site's own Worker, which mails a
+// confirmation link (double opt-in) through Resend; each new post of the English feed is then sent
+// to the confirmed list. No script and nothing of a third party loads on the page.
+const NEWSLETTER = "/api/subscribe";
 
 interface Props {
   readonly locale?: Locale;
@@ -34,7 +34,6 @@ const privacy = PRIVACY[locale];
       spellcheck="false"
       placeholder={text.email}
     />
-    <input type="hidden" name="embed" value="1" />
     <button type="submit">{text.subscribe}</button>
   </div>
   <p class="note">{privacy.note} <a href={privacyPath(locale)}>{privacy.link}</a></p>

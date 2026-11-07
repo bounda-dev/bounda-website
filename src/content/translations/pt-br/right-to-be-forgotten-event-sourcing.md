@@ -166,7 +166,7 @@ dados.
 
 ## Veja acontecer
 
-A [demo](https://demo.bounda.dev) é a bilheteria de um teatro rodando no Bounda, com um Durable
+A [demo](https://demo.bounda.dev/?scene=forget) é a bilheteria de um teatro rodando no Bounda, com um Durable
 Object por visitante. Compre um lugar e abra a cena **Forget me**. O seu e-mail some de todos os
 eventos da fita, por mais antigos que sejam, e do livro de vendas; as suas reservas saem dos read
 models; o lembrete agendado para você é cancelado. O stream mantém todas as posições.

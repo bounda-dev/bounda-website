@@ -166,7 +166,7 @@ the data.
 
 ## See it happen
 
-The [live demo](https://demo.bounda.dev) is a theatre box office running on Bounda, one Durable
+The [live demo](https://demo.bounda.dev/?scene=forget) is a theatre box office running on Bounda, one Durable
 Object per visitor. Buy a seat, then open the scene called **Forget me**. Your email disappears
 from every event on the tape, however old, and from the sales book; your bookings leave the read
 models; the reminder scheduled for you is cancelled. The stream keeps every position.

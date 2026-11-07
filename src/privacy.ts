@@ -47,7 +47,7 @@ const PROCESSORS = {
 } as const satisfies Record<string, Processor>;
 
 /** The one switch when the newsletter moves to another service. */
-export const PROCESSOR: Processor = PROCESSORS.buttondown;
+export const PROCESSOR: Processor = PROCESSORS.resend;
 
 export interface Section {
   readonly heading: string;
@@ -61,7 +61,8 @@ export interface Privacy {
   readonly lead: string;
   readonly updated: string;
   readonly sections: readonly Section[];
-  /** The first layer, under the newsletter form: who, what for, your rights, and the link. */
+  /** The first layer, under the newsletter form: what for, that consent can be withdrawn (art. 7(3)),
+   * and the link to the rest. */
   readonly note: string;
   readonly link: string;
 }
@@ -90,7 +91,7 @@ export const PRIVACY: Record<Locale, Privacy> = {
           "<strong>On what basis:</strong> your consent (GDPR art. 6(1)(a)), given when you click the link in the confirmation email. You can withdraw it at any time with the link at the end of every email; that does not undo what was sent before.",
           `<strong>Who handles it:</strong> ${PROCESSOR.company} keeps the list and sends the emails on our behalf, under a data processing agreement. It is based in the United States; the transfer relies on ${PROCESSOR.safeguards.en}. See ${policy}its privacy policy</a>.`,
           "<strong>No tracking:</strong> the emails do not record whether you open them or which links you click.",
-          "<strong>How long:</strong> while you are subscribed. When you unsubscribe, or never confirm, the address is deleted within 30 days.",
+          "<strong>How long:</strong> while you are subscribed. When you unsubscribe, the address is deleted within 30 days. An address that is never confirmed is not stored.",
           "<strong>Optional:</strong> without an email address you simply do not get the emails. The RSS feed carries the same posts.",
         ],
       },
@@ -107,7 +108,7 @@ export const PRIVACY: Record<Locale, Privacy> = {
         ],
       },
     ],
-    note: `Beñat Espiña (Bounda) uses your address only to send the posts, through ${PROCESSOR.name}. You confirm by email first, can leave from any email, and can see or erase your data at any time.`,
+    note: "Only to send you new posts. You can unsubscribe at any time.",
     link: "Privacy",
   },
   es: {
@@ -130,7 +131,7 @@ export const PRIVACY: Record<Locale, Privacy> = {
           "<strong>Con qué base:</strong> tu consentimiento (art. 6.1.a del RGPD), que das al pulsar el enlace del email de confirmación. Puedes retirarlo cuando quieras con el enlace del final de cada email; eso no deshace lo enviado antes.",
           `<strong>Quién lo gestiona:</strong> ${PROCESSOR.company} guarda la lista y envía los emails por nuestra cuenta, con un contrato de encargo del tratamiento. Está en Estados Unidos; la transferencia se apoya en ${PROCESSOR.safeguards.es}. Consulta ${policy}su política de privacidad</a>.`,
           "<strong>Sin seguimiento:</strong> los emails no registran si los abres ni qué enlaces pulsas.",
-          "<strong>Cuánto tiempo:</strong> mientras sigas suscrito. Si te das de baja, o nunca confirmas, la dirección se borra en un plazo de 30 días.",
+          "<strong>Cuánto tiempo:</strong> mientras sigas suscrito. Si te das de baja, la dirección se borra en un plazo de 30 días. Una dirección que nunca se confirma no se guarda.",
           "<strong>Opcional:</strong> sin dirección de email simplemente no recibes los emails. El feed RSS lleva los mismos posts.",
         ],
       },
@@ -147,7 +148,7 @@ export const PRIVACY: Record<Locale, Privacy> = {
         ],
       },
     ],
-    note: `Beñat Espiña (Bounda) usa tu dirección solo para enviarte los posts, a través de ${PROCESSOR.name}. Primero lo confirmas por email, puedes darte de baja desde cualquier envío y ver o borrar tus datos cuando quieras.`,
+    note: "Solo para enviarte los posts nuevos. Puedes darte de baja cuando quieras.",
     link: "Privacidad",
   },
   ja: {
@@ -170,7 +171,7 @@ export const PRIVACY: Record<Locale, Privacy> = {
           "<strong>法的根拠：</strong>確認メールのリンクをクリックしたときにいただく同意（GDPR 第 6 条 1 項 (a)）。各メールの末尾のリンクからいつでも撤回できます。撤回しても、それ以前に送ったものは取り消されません。",
           `<strong>取り扱う事業者：</strong>${PROCESSOR.company} がデータ処理契約に基づき、私たちに代わってリストを保管しメールを送信します。所在地は米国で、移転は ${PROCESSOR.safeguards.ja}に基づきます。詳しくは${policy}同社のプライバシーポリシー</a>をご覧ください。`,
           "<strong>トラッキングなし：</strong>メールの開封やリンクのクリックは記録しません。",
-          "<strong>保存期間：</strong>購読中のあいだ。配信を停止した場合、または確認しなかった場合、アドレスは 30 日以内に削除します。",
+          "<strong>保存期間：</strong>購読中のあいだ。配信を停止した場合、アドレスは 30 日以内に削除します。確認されなかったアドレスは保存しません。",
           "<strong>任意：</strong>メールアドレスを登録しなければメールが届かないだけです。同じ記事は RSS フィードでも読めます。",
         ],
       },
@@ -187,7 +188,7 @@ export const PRIVACY: Record<Locale, Privacy> = {
         ],
       },
     ],
-    note: `Beñat Espiña（Bounda）は、記事をお送りするためだけにアドレスを使い、配信には ${PROCESSOR.name} を使います。最初にメールで確認し、どのメールからでも配信を停止でき、いつでもデータの確認や削除を求められます。`,
+    note: "新しい記事をお送りするためだけに使います。いつでも配信を停止できます。",
     link: "プライバシー",
   },
   "pt-br": {
@@ -210,7 +211,7 @@ export const PRIVACY: Record<Locale, Privacy> = {
           "<strong>Com que base:</strong> seu consentimento (art. 6(1)(a) do GDPR), dado ao clicar no link do email de confirmação. Você pode retirá-lo quando quiser pelo link no fim de cada email; isso não desfaz o que foi enviado antes.",
           `<strong>Quem cuida disso:</strong> ${PROCESSOR.company} guarda a lista e envia os emails em nosso nome, sob um contrato de tratamento de dados. Fica nos Estados Unidos; a transferência se apoia ${PROCESSOR.safeguards["pt-br"]}. Veja ${policy}a política de privacidade dele</a>.`,
           "<strong>Sem rastreamento:</strong> os emails não registram se você os abre nem em quais links clica.",
-          "<strong>Por quanto tempo:</strong> enquanto você estiver inscrito. Se você cancelar, ou nunca confirmar, o endereço é apagado em até 30 dias.",
+          "<strong>Por quanto tempo:</strong> enquanto você estiver inscrito. Se você cancelar, o endereço é apagado em até 30 dias. Um endereço que nunca é confirmado não é guardado.",
           "<strong>Opcional:</strong> sem um endereço de email você só não recebe os emails. O feed RSS traz os mesmos posts.",
         ],
       },
@@ -227,7 +228,7 @@ export const PRIVACY: Record<Locale, Privacy> = {
         ],
       },
     ],
-    note: `Beñat Espiña (Bounda) usa seu endereço só para enviar os posts, pelo ${PROCESSOR.name}. Você confirma por email primeiro, pode sair por qualquer email e ver ou apagar seus dados quando quiser.`,
+    note: "Só para enviar os posts novos. Você pode cancelar quando quiser.",
     link: "Privacidade",
   },
 };
