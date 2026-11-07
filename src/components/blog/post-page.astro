@@ -5,8 +5,9 @@ import { blogPath, formatDate, LANGUAGES, postPath } from "../../i18n";
 import BaseLayout from "../../layouts/base.astro";
 import "../../styles/prose.css";
 import Footer from "../footer.astro";
-import Install from "../install.astro";
 import Nav from "../nav.astro";
+import newsletter from "../../newsletter.json";
+import Subscribe from "../subscribe.astro";
 
 interface Props {
   readonly article: Article;
@@ -107,33 +108,28 @@ const structuredData = {
       <svg class="close" viewBox="0 0 35 65" aria-hidden="true"><path d="M25 0h10v65H25v-8H0v-6h25z"></path></svg>
     </article>
 
-    <section class="wrap after" aria-labelledby="try-it">
-      <div class="box">
-        <p class="label eyebrow" id="try-it">{text.tryIt}</p>
-        {tryIt && <a class="text-link" href={tryIt.href}>{tryIt.label}</a>}
-        <p>{text.scaffold}</p>
-        <Install />
-        <div class="links">
-          <a class="text-link" href="https://docs.bounda.dev/getting-started/">{text.docs}</a>
-          <a class="text-link dim" href="/blog/rss.xml">{text.rss}</a>
-        </div>
-      </div>
-      {
-        others.length > 0 && (
-          <nav class="more" aria-label={text.more}>
-            <p class="label">{text.more}</p>
-            <ul>
-              {others.map((other) => (
-                <li>
-                  <a href={postPath(locale, other.slug)}>{other.title}</a>
-                  <time datetime={other.date.toISOString()}>{formatDate(locale, other.date)}</time>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        )
-      }
-    </section>
+    {
+      (newsletter.enabled || others.length > 0) && (
+      <section class="wrap after">
+        {newsletter.enabled && <Subscribe locale={locale} />}
+        {
+          others.length > 0 && (
+            <nav class="more" aria-label={text.more}>
+              <p class="label">{text.more}</p>
+              <ul>
+                {others.map((other) => (
+                  <li>
+                    <a href={postPath(locale, other.slug)}>{other.title}</a>
+                    <time datetime={other.date.toISOString()}>{formatDate(locale, other.date)}</time>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )
+        }
+      </section>
+      )
+    }
   </main>
   <Footer />
 </BaseLayout>
@@ -278,38 +274,6 @@ const structuredData = {
     padding-top: 56px;
     padding-bottom: clamp(80px, 12vh, 128px);
     border-top: 1px solid var(--rule);
-  }
-
-  .box {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    align-items: flex-start;
-    max-width: 620px;
-  }
-
-  .box p:not(.label) {
-    margin: 0;
-    color: var(--muted);
-  }
-
-  .eyebrow {
-    display: flex;
-    gap: 14px;
-    align-items: center;
-  }
-
-  .eyebrow::before {
-    content: "";
-    width: 28px;
-    height: 1px;
-    background: var(--accent);
-  }
-
-  .links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px 24px;
   }
 
   .more ul {

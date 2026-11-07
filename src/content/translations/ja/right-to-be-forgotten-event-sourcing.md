@@ -108,6 +108,6 @@ export const project = async ({ event, table }: Projection.Args) => {
 
 ## 実際に見てみる
 
-[ライブデモ](https://demo.bounda.dev)は、訪問者ごとに一つの Durable Object で Bounda を動かしている劇場のチケット窓口です。席を買ってから、**Forget me** というシーンを開いてください。あなたのメールアドレスは、どれほど古いイベントからも、売上台帳からも消えます。予約はリードモデルから外れ、あなた宛てに予約されていたリマインダーは取り消されます。ストリームはすべてのポジションを保ったままです。
+[ライブデモ](https://demo.bounda.dev/?scene=forget)は、訪問者ごとに一つの Durable Object で Bounda を動かしている劇場のチケット窓口です。席を買ってから、**Forget me** というシーンを開いてください。あなたのメールアドレスは、どれほど古いイベントからも、売上台帳からも消えます。予約はリードモデルから外れ、あなた宛てに予約されていたリマインダーは取り消されます。ストリームはすべてのポジションを保ったままです。
 
 残りは[個人データのガイド](https://docs.bounda.dev/guides/personal-data/)(英語)にあります。ポートで十分な場合とそうでない場合については、[Forgetting in an immutable log](https://docs.bounda.dev/concepts/forgetting-in-an-immutable-log/)(英語)が詳しく扱っています。

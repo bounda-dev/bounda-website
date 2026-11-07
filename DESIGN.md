@@ -115,12 +115,13 @@ It is not a marketing website. It answers what Bounda is and why; anything about
 
 ## The blog
 
-`bounda.dev/blog` carries the "why" the landing page cannot hold: essays, tutorials, honest comparisons and measurements, each one ending where the reader can see the idea run (a scene of the demo, a guide) and `npm create bounda@latest`.
+`bounda.dev/blog` carries the "why" the landing page cannot hold: essays, tutorials, honest comparisons and measurements, each one ending where the reader can see the idea run (a scene of the demo, a guide).
 
 - **Reading first.** Text at a 68ch measure, IBM Plex at 17px / 1.7; headings in display type at 104%; code in the same token-coloured theme as the landing page.
 - **The ledger grammar** for the index (position first, in mono and muted; a hairline between entries) and for tables in a post.
 - **The ⅃ closes a post**, in ochre, at the bottom-right of its last line.
-- **One clean column.** A post is a single centred column at the reading measure, with nothing beside it. A link to see it run sits under the byline; the full call to action comes at the end; nothing pops up or sticks to the screen.
+- **One clean column.** A post is a single centred column at the reading measure, with nothing beside it. A link to see it run sits under the byline and in the post's own last lines; after the post come the newsletter form and more posts; nothing pops up or sticks to the screen.
+- **The newsletter** is a plain form posted to the site's Worker (double opt-in through Resend, one email per post from the English feed), in the same box as the install command, with only the note the law asks for and a link to `/privacy/`, which is in English, like the rest of the site outside the blog. No third-party script or iframe. It sits only after posts, never on the landing page, and is off until `src/newsletter.json` turns it on.
 - **Every post has its card**, drawn at build in Basalt as the docs' cards are.
 - **Four languages.** Each post is read in English, Spanish, Japanese and Brazilian Portuguese; a translation says so and links the original. Code is never translated (`translate="no"`). Japanese, which the brand's faces do not cover, is set in the system's Japanese face (Hiragino Sans, Noto Sans JP), and its cards in Noto Sans JP.
 
