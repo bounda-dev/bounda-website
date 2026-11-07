@@ -185,16 +185,8 @@ clase no te da:
 - **Una app conocida antes de arrancar.** El generador lee nombres, no código, así que un fichero
   mal colocado falla al guardarlo, no cuando arranca la app.
 
-## Lo que cuesta
-
-- **Los nombres pesan.** El nombre del fichero es el tipo del evento en el log, así que renombrar
-  un evento es un cambio de esquema, no un refactor.
-- **Un dialecto que aprender.** `begin`, `evolve`, `project` y una estructura de carpetas, antes
-  del primer comando.
-- **Un paso de generación.** Los tipos existen cuando ha corrido `bounda generate`, al instalar o
-  en modo watch.
-- **Joven.** Hasta la 1.0 la API todavía puede cambiar entre versiones menores, siempre anunciado
-  en el changelog.
+El precio es que los nombres pesan: el nombre del fichero es el tipo del evento en el log, así que
+renombrar un evento es un cambio de esquema, no un refactor.
 
 ## Pruébalo
 

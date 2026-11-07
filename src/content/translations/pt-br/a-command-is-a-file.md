@@ -182,15 +182,8 @@ serviços. Para um app TypeScript, porém, funções em arquivos dão três cois
 - **Um app conhecido antes de rodar.** O gerador lê nomes, não código, então um arquivo fora do
   lugar falha quando você salva, não quando o app sobe.
 
-## Quanto custa
-
-- **Os nomes sustentam peso.** O nome do arquivo é o tipo de evento no log, então renomear um
-  evento é uma mudança de schema, não um refactor.
-- **Um dialeto para aprender.** `begin`, `evolve`, `project` e um layout de pastas, antes do
-  primeiro comando.
-- **Uma etapa de geração.** Os tipos existem depois que o `bounda generate` roda, na instalação ou
-  em modo watch.
-- **Jovem.** Até a 1.0, a API ainda pode mudar entre versões minor, sempre registrado no changelog.
+O preço é que os nomes têm peso: o nome do arquivo é o tipo do evento no log, então renomear um
+evento é uma mudança de schema, não um refactor.
 
 ## Experimente
 

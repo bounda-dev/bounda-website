@@ -184,15 +184,8 @@ class does not:
 - **An app known before it runs.** The generator reads names, not code, so a misplaced file
   fails when you save it, not when the app boots.
 
-## What it costs
-
-- **Names carry weight.** The file name is the event type in the log, so renaming an event is a
-  schema change, not a refactor.
-- **A dialect to learn.** `begin`, `evolve`, `project` and a folder layout, before the first
-  command.
-- **A generation step.** The types exist once `bounda generate` has run, on install or in watch
-  mode.
-- **Young.** Until 1.0 the API can still change between minor versions, always in the changelog.
+The price is that names carry weight: the file name is the event type in the log, so renaming an
+event is a schema change, not a refactor.
 
 ## Try it
 
