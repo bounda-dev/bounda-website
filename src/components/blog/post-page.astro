@@ -6,6 +6,7 @@ import BaseLayout from "../../layouts/base.astro";
 import "../../styles/prose.css";
 import Footer from "../footer.astro";
 import Nav from "../nav.astro";
+import newsletter from "../../newsletter.json";
 import Subscribe from "../subscribe.astro";
 
 interface Props {
@@ -107,24 +108,28 @@ const structuredData = {
       <svg class="close" viewBox="0 0 35 65" aria-hidden="true"><path d="M25 0h10v65H25v-8H0v-6h25z"></path></svg>
     </article>
 
-    <section class="wrap after">
-      <Subscribe locale={locale} />
-      {
-        others.length > 0 && (
-          <nav class="more" aria-label={text.more}>
-            <p class="label">{text.more}</p>
-            <ul>
-              {others.map((other) => (
-                <li>
-                  <a href={postPath(locale, other.slug)}>{other.title}</a>
-                  <time datetime={other.date.toISOString()}>{formatDate(locale, other.date)}</time>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        )
-      }
-    </section>
+    {
+      (newsletter.enabled || others.length > 0) && (
+      <section class="wrap after">
+        {newsletter.enabled && <Subscribe locale={locale} />}
+        {
+          others.length > 0 && (
+            <nav class="more" aria-label={text.more}>
+              <p class="label">{text.more}</p>
+              <ul>
+                {others.map((other) => (
+                  <li>
+                    <a href={postPath(locale, other.slug)}>{other.title}</a>
+                    <time datetime={other.date.toISOString()}>{formatDate(locale, other.date)}</time>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )
+        }
+      </section>
+      )
+    }
   </main>
   <Footer />
 </BaseLayout>

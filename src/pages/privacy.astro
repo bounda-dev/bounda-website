@@ -2,6 +2,7 @@
 import Footer from "../components/footer.astro";
 import Nav from "../components/nav.astro";
 import BaseLayout from "../layouts/base.astro";
+import newsletter from "../newsletter.json";
 import { CONTACT } from "../privacy";
 import "../styles/prose.css";
 
@@ -17,16 +18,22 @@ import "../styles/prose.css";
         <h2>Controller</h2>
         <p>Beñat Espiña, <a href={`mailto:${CONTACT}`}>{CONTACT}</a>.</p>
 
-        <h2>Newsletter</h2>
-        <ul>
-          <li>Your email address is used only to send you new posts, on the basis of your consent (GDPR art. 6(1)(a)).</li>
-          <li>You can withdraw it at any time with the link in every email. Giving your address is optional.</li>
-          <li>It is kept until you unsubscribe.</li>
-          <li>
-            It is processed on our behalf by Resend (Plus Five Five, Inc.) in the United States, under the EU–U.S. Data
-            Privacy Framework and the EU Standard Contractual Clauses.
-          </li>
-        </ul>
+        {
+          newsletter.enabled && (
+            <>
+              <h2>Newsletter</h2>
+              <ul>
+                <li>Your email address is used only to send you new posts, on the basis of your consent (GDPR art. 6(1)(a)).</li>
+                <li>You can withdraw it at any time with the link in every email. Giving your address is optional.</li>
+                <li>It is kept until you unsubscribe.</li>
+                <li>
+                  It is processed on our behalf by Resend (Plus Five Five, Inc.) in the United States, under the EU–U.S. Data
+                  Privacy Framework and the EU Standard Contractual Clauses.
+                </li>
+              </ul>
+            </>
+          )
+        }
 
         <h2>This site</h2>
         <p>
