@@ -160,8 +160,9 @@ export function loader({ params }: Route.LoaderArgs) {
 ```
 
 Pegou porque nada ali é fiação: você escreve o que a rota faz, e o framework resolve o resto. O
-Bounda leva isso ao domínio, e dá um passo a mais: o React Router lista as rotas em
-`app/routes.ts`, o Bounda lê a pasta.
+Bounda leva isso ao domínio. O React Router deixa você listar as rotas em `app/routes.ts` ou
+[lê-las de uma pasta](https://reactrouter.com/how-to/file-route-conventions); o Bounda só lê a pasta, e ali o lugar diz mais do que um caminho: a
+qual agregado um evento pertence, qual evento uma projeção trata.
 
 ## Por que funções, e não classes
 

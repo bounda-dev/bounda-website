@@ -162,8 +162,10 @@ export function loader({ params }: Route.LoaderArgs) {
 ```
 
 It caught on because nothing in it is wiring: you write what the route does, and the framework
-works out the rest. Bounda brings that to the domain, and goes one step further: React Router
-lists its routes in `app/routes.ts`, Bounda reads the folder.
+works out the rest. Bounda brings that to the domain. React Router lets you list routes in
+`app/routes.ts` or [read them from a folder](https://reactrouter.com/how-to/file-route-conventions); Bounda only reads the folder, and there the
+place says more than a path: which aggregate an event belongs to, which event a projection
+handles.
 
 ## Why functions, not classes
 

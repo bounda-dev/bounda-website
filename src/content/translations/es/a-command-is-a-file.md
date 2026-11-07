@@ -162,8 +162,9 @@ export function loader({ params }: Route.LoaderArgs) {
 ```
 
 Cuajó porque nada en él es cableado: escribes lo que hace la ruta y el framework se encarga del
-resto. Bounda lleva eso al dominio, y da un paso más: React Router enumera sus rutas en
-`app/routes.ts`, Bounda lee la carpeta.
+resto. Bounda lleva eso al dominio. React Router te deja enumerar las rutas en `app/routes.ts`
+o [leerlas de una carpeta](https://reactrouter.com/how-to/file-route-conventions); Bounda solo lee la carpeta, y ahí el sitio dice más que una
+ruta: a qué agregado pertenece un evento, qué evento maneja una proyección.
 
 ## Por qué funciones y no clases
 

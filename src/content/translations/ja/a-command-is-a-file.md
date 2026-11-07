@@ -137,7 +137,7 @@ export function loader({ params }: Route.LoaderArgs) {
 }
 ```
 
-これが広まったのは、配線が一つもないからです。ルートが何をするかを書けば、残りはフレームワークが引き受けます。Bounda はそれをドメインに持ち込み、さらに一歩進みます。React Router は `app/routes.ts` にルートを列挙しますが、Bounda はフォルダーを読みます。
+これが広まったのは、配線が一つもないからです。ルートが何をするかを書けば、残りはフレームワークが引き受けます。Bounda はそれをドメインに持ち込みます。React Router では `app/routes.ts` にルートを列挙することも、[フォルダーから読み込む](https://reactrouter.com/how-to/file-route-conventions)こともできます。Bounda はフォルダーだけを読み、そこでは場所がパス以上のことを語ります。イベントがどの集約に属するか、プロジェクションがどのイベントを扱うか、です。
 
 ## なぜクラスではなく関数なのか
 
