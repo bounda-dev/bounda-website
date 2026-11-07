@@ -29,6 +29,16 @@ export interface Language {
   readonly languages: string;
   readonly translated: string;
   readonly original: string;
+  readonly newsletter: Newsletter;
+}
+
+/** The newsletter's form: each new post by email, sent from the English feed. */
+export interface Newsletter {
+  readonly heading: string;
+  readonly lead: string;
+  readonly email: string;
+  readonly subscribe: string;
+  readonly note: string;
 }
 
 export const LANGUAGES: Record<Locale, Language> = {
@@ -52,6 +62,13 @@ export const LANGUAGES: Record<Locale, Language> = {
     languages: "Read in",
     translated: "",
     original: "",
+    newsletter: {
+      heading: "Newsletter",
+      lead: "Each new post by email, the day it is published. One email per post, in English, and nothing else.",
+      email: "Email address",
+      subscribe: "Subscribe",
+      note: "Sent with Buttondown. You confirm by email first and can leave from any issue.",
+    },
   },
   es: {
     tag: "es",
@@ -73,6 +90,13 @@ export const LANGUAGES: Record<Locale, Language> = {
     languages: "Leer en",
     translated: "Traducido del original en inglés.",
     original: "Leer el original",
+    newsletter: {
+      heading: "Newsletter",
+      lead: "Cada post nuevo por email, el día que se publica. Un email por post, en inglés, y nada más.",
+      email: "Dirección de email",
+      subscribe: "Suscribirme",
+      note: "Se envía con Buttondown. Primero lo confirmas por email y puedes darte de baja desde cualquier envío.",
+    },
   },
   ja: {
     tag: "ja",
@@ -94,6 +118,13 @@ export const LANGUAGES: Record<Locale, Language> = {
     languages: "言語",
     translated: "英語の原文からの翻訳です。",
     original: "原文を読む",
+    newsletter: {
+      heading: "ニュースレター",
+      lead: "新しい記事を公開日にメールでお届けします。1 記事につき 1 通、英語で、それ以外は送りません。",
+      email: "メールアドレス",
+      subscribe: "購読する",
+      note: "配信は Buttondown。最初にメールで確認し、どの号からでも配信を停止できます。",
+    },
   },
   "pt-br": {
     tag: "pt-BR",
@@ -115,6 +146,13 @@ export const LANGUAGES: Record<Locale, Language> = {
     languages: "Ler em",
     translated: "Traduzido do original em inglês.",
     original: "Ler o original",
+    newsletter: {
+      heading: "Newsletter",
+      lead: "Cada post novo por email, no dia em que é publicado. Um email por post, em inglês, e nada mais.",
+      email: "Endereço de email",
+      subscribe: "Inscrever-me",
+      note: "Enviado com o Buttondown. Você confirma por email primeiro e pode sair a partir de qualquer envio.",
+    },
   },
 };
 

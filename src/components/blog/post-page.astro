@@ -7,6 +7,7 @@ import "../../styles/prose.css";
 import Footer from "../footer.astro";
 import Install from "../install.astro";
 import Nav from "../nav.astro";
+import Subscribe from "../subscribe.astro";
 
 interface Props {
   readonly article: Article;
@@ -118,6 +119,7 @@ const structuredData = {
           <a class="text-link dim" href="/blog/rss.xml">{text.rss}</a>
         </div>
       </div>
+      <Subscribe locale={locale} />
       {
         others.length > 0 && (
           <nav class="more" aria-label={text.more}>

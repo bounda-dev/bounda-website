@@ -1,0 +1,144 @@
+---
+import { LANGUAGES, type Locale } from "../i18n";
+
+// The newsletter's sign-up: a plain form posted to Buttondown, which mails a confirmation link
+// (double opt-in) and sends each new post from the English feed, /blog/rss.xml. No script, no
+// iframe: the reader lands on Buttondown's page to confirm, and the site loads nothing of theirs.
+const NEWSLETTER = "https://buttondown.com/api/emails/embed-subscribe/bounda";
+
+interface Props {
+  readonly locale?: Locale;
+  /** Distinguishes two forms on one page, and names the heading the form is labelled by. */
+  readonly id?: string;
+}
+
+const { locale = "en", id = "newsletter" } = Astro.props;
+const text = LANGUAGES[locale].newsletter;
+---
+
+<form class="subscribe" action={NEWSLETTER} method="post" aria-labelledby={`${id}-heading`}>
+  <p class="label eyebrow" id={`${id}-heading`}>{text.heading}</p>
+  <p class="lead">{text.lead}</p>
+  <div class="field">
+    <label class="visually-hidden" for={`${id}-email`}>{text.email}</label>
+    <input
+      id={`${id}-email`}
+      type="email"
+      name="email"
+      required
+      autocomplete="email"
+      inputmode="email"
+      autocapitalize="off"
+      spellcheck="false"
+      placeholder={text.email}
+    />
+    <input type="hidden" name="embed" value="1" />
+    <button type="submit">{text.subscribe}</button>
+  </div>
+  <p class="note">{text.note}</p>
+</form>
+
+<style>
+  .subscribe {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-items: flex-start;
+    width: 100%;
+    max-width: 620px;
+  }
+
+  .eyebrow {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }
+
+  .eyebrow::before {
+    content: "";
+    width: 28px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  .lead,
+  .note {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .note {
+    font-size: 0.8125rem;
+    line-height: 1.5;
+  }
+
+  /* The same box as the install command: a hairline, the surface, a label-set button at the end. */
+  .field {
+    display: flex;
+    align-items: stretch;
+    width: min(100%, 460px);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--surface) 94%, transparent);
+  }
+
+  input[type="email"] {
+    flex: 1;
+    min-width: 0;
+    padding: 13px 16px;
+    border: 0;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--text);
+    font: 400 0.9375rem/1.2 var(--font-sans);
+  }
+
+  input[type="email"]::placeholder {
+    color: var(--muted);
+    opacity: 1;
+  }
+
+  button {
+    appearance: none;
+    border: 0;
+    border-left: 1px solid var(--rule);
+    border-radius: 0;
+    background: transparent;
+    color: var(--text);
+    padding: 0 16px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-stretch: 125%;
+    font-size: 0.625rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  button:hover,
+  button:focus-visible {
+    background: var(--raised);
+  }
+
+  /* Controls inside a bordered box keep the ring 3px inside it (DESIGN.md). */
+  input[type="email"]:focus-visible,
+  button:focus-visible {
+    outline-offset: -3px;
+  }
+
+  @media (max-width: 760px) {
+    .field {
+      width: 100%;
+    }
+
+    input[type="email"] {
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+
+    button {
+      padding: 0 12px;
+    }
+  }
+</style>
