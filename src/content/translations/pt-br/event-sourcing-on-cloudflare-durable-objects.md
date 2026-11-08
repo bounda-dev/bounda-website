@@ -251,6 +251,14 @@ export const project = async ({ event, table }: Projection.Args) => {
 Rode `npm run typecheck`. Ele gera os tipos de novo e verifica o app inteiro, inclusive o `status`
 que as projeções novas escrevem.
 
+Se você criou pedidos no passo 3, ou fez o deploy pelo botão, essas linhas voltam sem status. O
+Bounda adiciona a coluna nova à tabela quando o objeto inicia, mas uma linha só recebe um valor
+quando uma projeção a toca de novo. Um read model é dado derivado, então a solução é projetar o
+stream inteiro de novo com o código novo: `rebuildReadModel("orders")` no cliente que o `connect`
+dá faz isso sem tirar o read model do ar
+([rebuilding a read model](https://docs.bounda.dev/guides/deployment/#rebuilding-a-read-model)).
+Para o store local do `npm run dev`, basta apagar `.wrangler/state`.
+
 ## 5. Teste sem esperar meia hora
 
 `createTestApp` dá o app sobre um store em memória com um relógio que só anda quando você o move.
@@ -392,11 +400,12 @@ ambas conferidas em 7 de novembro de 2026:
 O armazenamento é cobrado à parte, a US$ 0,20 por GB-mês além dos 5 GB-mês do plano Paid, e um
 event store só cresce.
 
-O app que você acabou de construir custa mais por pedido, porque a sua policy tem trabalho a fazer.
-Medido do mesmo jeito, o alarme que a roda escreve mais 7 linhas (a entrada do inbox, o
-`expireOrder` agendado e um checkpoint), e cada vez que o objeto arma o alarme é mais uma linha
-escrita: cerca de **17 linhas e duas requisições por pedido criado**, antes de a expiração rodar.
-As escritas são a conta, e cada `.index()` numa view e cada policy é uma linha dela.
+O app que você acabou de construir custa mais por pedido, porque a sua policy tem trabalho a fazer
+no alarme: a entrada do inbox que faz ela rodar uma vez só, o `expireOrder` agendado, um checkpoint
+e uma linha cada vez que o objeto arma o alarme. Medido com a mesma instrumentação, isso deu **mais
+ou menos o dobro das linhas do template, e uma segunda requisição, por pedido criado**, sem contar
+a expiração em si, que roda meia hora depois. As escritas são a conta, e cada `.index()` numa view
+e cada policy é uma linha dela.
 
 Os números vêm deste teste, umas 25 linhas no workerd. Adicione-o como `tests/cost.test.ts` ao
 template e `npm test` confere as 8:

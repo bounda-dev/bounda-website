@@ -254,6 +254,14 @@ export const project = async ({ event, table }: Projection.Args) => {
 Run `npm run typecheck`. It regenerates the types and checks the whole app, including the
 `status` the new projections write.
 
+If you placed orders in step 3, or deployed with the button, those rows come back without a
+status. Bounda adds the new column to the table when the object starts, but a row only gets a
+value when a projection touches it again. A read model is derived data, so the fix is to project
+the whole stream again with the new code: `rebuildReadModel("orders")` on the client that
+`connect` gives you does it without taking the read model offline
+([rebuilding a read model](https://docs.bounda.dev/guides/deployment/#rebuilding-a-read-model)).
+For the local store of `npm run dev`, deleting `.wrangler/state` is enough.
+
 ## 5. Test it, without waiting half an hour
 
 `createTestApp` gives you the app on an in-memory store with a clock that only moves when you move
@@ -394,11 +402,12 @@ With Cloudflare's prices, as published on the
 Storage is billed apart, at $0.20 per GB-month past 5 GB-month on Paid, and an event store only
 grows.
 
-The app you just built costs more per order, because its policy has work to do. Measured the
-same way, the alarm that runs it writes 7 more rows (the inbox entry, the scheduled `expireOrder`
-and a checkpoint), and each time the object arms its alarm is one more row written: about **17
-rows and two requests per order placed**, before the expiry itself runs. Writes are the bill, and
-every `.index()` in a view and every policy is a line on it.
+The app you just built costs more per order, because its policy has work to do in the alarm:
+the inbox entry that makes it run once, the scheduled `expireOrder`, a checkpoint, and one row
+each time the object arms its alarm. Measured with the same instrumentation, that came to
+**roughly twice the template's rows, and a second request, per order placed**, not counting the
+expiry itself, which runs half an hour later. Writes are the bill, and every `.index()` in a view
+and every policy is a line on it.
 
 The figures come from this test, about 25 lines in workerd. Add it as `tests/cost.test.ts` to the
 template and `npm test` checks the 8:

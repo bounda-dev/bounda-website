@@ -252,6 +252,14 @@ export const project = async ({ event, table }: Projection.Args) => {
 Ejecuta `npm run typecheck`. Regenera los tipos y comprueba toda la app, incluido el `status` que
 escriben las proyecciones nuevas.
 
+Si creaste pedidos en el paso 3, o desplegaste con el botón, esas filas vuelven sin estado. Bounda
+añade la columna nueva a la tabla cuando arranca el objeto, pero una fila solo recibe un valor
+cuando una proyección vuelve a tocarla. Un read model son datos derivados, así que la solución es
+proyectar otra vez todo el stream con el código nuevo: `rebuildReadModel("orders")` en el cliente
+que te da `connect` lo hace sin dejar el read model fuera de servicio
+([rebuilding a read model](https://docs.bounda.dev/guides/deployment/#rebuilding-a-read-model)).
+Para el store local de `npm run dev`, basta con borrar `.wrangler/state`.
+
 ## 5. Pruébalo sin esperar media hora
 
 `createTestApp` te da la app sobre un store en memoria con un reloj que solo avanza cuando tú lo
@@ -394,11 +402,12 @@ comprobadas las dos el 7 de noviembre de 2026:
 El almacenamiento se factura aparte, a 0,20 $ por GB-mes pasados los 5 GB-mes del plan Paid, y un
 event store solo crece.
 
-La app que acabas de construir cuesta más por pedido, porque su policy tiene trabajo. Medida igual,
-la alarma que la ejecuta escribe 7 filas más (la entrada del inbox, el `expireOrder` programado y
-un checkpoint), y cada vez que el objeto arma su alarma es otra fila escrita: unas **17 filas y dos
-peticiones por pedido creado**, antes de que corra la caducidad. Las escrituras son la factura, y
-cada `.index()` de una vista y cada policy es una línea de ella.
+La app que acabas de construir cuesta más por pedido, porque su policy tiene trabajo en la alarma:
+la entrada del inbox que hace que corra una sola vez, el `expireOrder` programado, un checkpoint y
+una fila cada vez que el objeto arma su alarma. Medido con la misma instrumentación, sale **más o
+menos el doble de filas que la plantilla, y una segunda petición, por pedido creado**, sin contar
+la caducidad en sí, que corre media hora después. Las escrituras son la factura, y cada `.index()`
+de una vista y cada policy es una línea de ella.
 
 Las cifras salen de este test, unas 25 líneas en workerd. Añádelo como `tests/cost.test.ts` a la
 plantilla y `npm test` comprueba las 8:
