@@ -175,6 +175,13 @@ const structuredData = {
       transform: scaleX(0);
       transform-origin: 0 50%;
       animation: read linear both;
+    }
+
+    /*
+     * Its own rule, after the shorthand: in one rule the minifier folds the timeline into
+     * `animation`, which cannot carry one, and the browser drops the whole declaration.
+     */
+    .post .progress {
       animation-timeline: --post;
       animation-range: contain 0% contain 100%;
     }
