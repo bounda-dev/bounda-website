@@ -97,6 +97,16 @@ const structuredData = {
           locale !== "en" && (
             <p class="translated">
               {text.translated} <a href={postPath("en", slug)} hreflang="en">{text.original}</a>
+              {
+                text.report && (
+                  <>
+                    {" · "}
+                    <a href={`https://github.com/bounda-dev/bounda-website/issues/new?title=${encodeURIComponent(`Translation (${locale}): ${slug}`)}`}>
+                      {text.report}
+                    </a>
+                  </>
+                )
+              }
             </p>
           )
         }

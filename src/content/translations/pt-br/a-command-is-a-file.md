@@ -1,8 +1,8 @@
 ---
 title: Um comando é um arquivo
-description: Uma feature inteira com event sourcing em dois arquivos pequenos, e as cinco coisas que você deixa de escrever para chegar lá. De onde vem esse formato, e quanto ele custa.
+description: Uma feature inteira com event sourcing em dois arquivos pequenos, e as cinco coisas que você deixa de escrever para chegar lá. De onde vem esse formato, e o que ele custa.
 tryIt:
-  label: Bata no limite de lugares na demo ao vivo
+  label: Chegue ao limite de lugares na demo ao vivo
 ---
 
 Event sourcing tem fama de cerimônia. Antes de guardar o primeiro fato, você já escreveu uma classe
@@ -168,10 +168,10 @@ projeção trata.
 Os frameworks de event sourcing já consolidados modelam o agregado como uma classe: uma classe
 anotada no
 [Axon](https://docs.axoniq.io/axon-framework-reference/5.4/commands/entities/event-sourced-entity/),
-uma classe simples dobrada por métodos `Apply` no
+uma classe simples que faz o fold com métodos `Apply` no
 [Marten](https://martendb.io/events/projections/aggregate-projections.html). É um design sólido,
 comprovado ao longo de anos, e é o que permite ao Axon rodar o mesmo handler numa frota de
-serviços. Para um app TypeScript, porém, funções em arquivos dão três coisas que uma classe não dá:
+serviços. Para um único app TypeScript, porém, funções em arquivos dão três coisas que uma classe não dá:
 
 - **Um estado que não pode se desviar dos eventos.** Ele é o que os eventos devolvem, então não há
   uma segunda declaração para manter em sincronia à mão.
