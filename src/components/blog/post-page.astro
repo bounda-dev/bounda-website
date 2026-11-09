@@ -73,27 +73,6 @@ const structuredData = {
           <span>{text.minutes(minutes)}</span>
         </p>
         {
-          locales.length > 1 && (
-            <nav class="languages" aria-label={text.languages}>
-              <span class="label">{text.languages}</span>
-              <ul>
-                {locales.map((other) => (
-                  <li>
-                    <a
-                      href={postPath(other, slug)}
-                      hreflang={LANGUAGES[other].tag}
-                      lang={LANGUAGES[other].tag}
-                      aria-current={other === locale ? "page" : undefined}
-                    >
-                      {LANGUAGES[other].name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          )
-        }
-        {
           locale !== "en" && (
             <p class="translated">
               {text.translated} <a href={postPath("en", slug)} hreflang="en">{text.original}</a>
@@ -115,6 +94,23 @@ const structuredData = {
       <div class="prose">
         <Content />
       </div>
+      {
+        locale === "en" && locales.length > 1 && (
+          <p class="also-in">
+            {text.alsoIn}{" "}
+            {locales
+              .filter((other) => other !== "en")
+              .map((other, index) => (
+                <>
+                  {index > 0 && " · "}
+                  <a href={postPath(other, slug)} hreflang={LANGUAGES[other].tag} lang={LANGUAGES[other].tag}>
+                    {LANGUAGES[other].name}
+                  </a>
+                </>
+              ))}
+          </p>
+        )
+      }
       <svg class="close" viewBox="0 0 35 65" aria-hidden="true"><path d="M25 0h10v65H25v-8H0v-6h25z"></path></svg>
     </article>
 
@@ -225,38 +221,18 @@ const structuredData = {
     text-decoration: underline;
   }
 
-  .languages {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 18px;
-    align-items: baseline;
-    margin-top: 14px;
-  }
-
-  .languages ul {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 16px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
+  .also-in {
+    margin: 40px 0 0;
     font-size: 0.875rem;
-  }
-
-  .languages a {
     color: var(--muted);
-    text-decoration: none;
   }
 
-  .languages a:hover,
-  .languages a[aria-current="page"] {
+  .also-in a {
+    color: var(--muted);
+  }
+
+  .also-in a:hover {
     color: var(--text);
-  }
-
-  .languages a[aria-current="page"] {
-    text-decoration: underline;
-    text-decoration-color: var(--accent);
-    text-underline-offset: 4px;
   }
 
   .translated {
