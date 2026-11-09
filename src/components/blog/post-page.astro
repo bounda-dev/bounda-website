@@ -59,6 +59,7 @@ const structuredData = {
   </Fragment>
   <Nav />
   <main id="main-content" class="post">
+    <div class="progress" aria-hidden="true"></div>
     <article class="wrap column">
       <header class="head">
         <p class="label crumbs">
@@ -143,6 +144,46 @@ const structuredData = {
 <style>
   .post {
     padding: clamp(112px, 16vh, 160px) 0 0;
+  }
+
+  /*
+   * How much of the post is left: a hairline at the top of the view, driven by the scroll itself.
+   * No script and no scroll listener; it animates a transform, which the compositor handles, so it
+   * costs nothing on the main thread. It runs from the article's top reaching the top of the view to
+   * its end reaching the bottom, and browsers without scroll-driven animations simply show none.
+   */
+  .progress {
+    display: none;
+  }
+
+  @supports (animation-timeline: view()) {
+    .post {
+      timeline-scope: --post;
+    }
+
+    article {
+      view-timeline: --post block;
+    }
+
+    .progress {
+      display: block;
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 30;
+      height: 2px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transform-origin: 0 50%;
+      animation: read linear both;
+      animation-timeline: --post;
+      animation-range: contain 0% contain 100%;
+    }
+  }
+
+  @keyframes read {
+    to {
+      transform: scaleX(1);
+    }
   }
 
   article {
