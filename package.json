@@ -11,9 +11,9 @@
     "lighthouse": "node scripts/lighthouse.mjs"
   },
   "dependencies": {
-    "@astrojs/markdown-satteri": "0.4.6",
+    "@astrojs/markdown-satteri": "0.4.7",
     "@astrojs/rss": "4.0.19",
-    "astro": "7.4.4",
+    "astro": "7.4.7",
     "three": "0.186.1"
   },
   "devDependencies": {
@@ -27,6 +27,6 @@
     "lighthouse": "13.6.0",
     "satori": "0.35.1",
     "typescript": "5.9.3",
-    "wrangler": "4.156.0"
+    "wrangler": "4.158.0"
   }
 }
