@@ -1,6 +1,6 @@
 ---
 title: O direito ao esquecimento, num log que nunca apaga
-description: Event sourcing guarda cada fato para sempre; a GDPR (e a LGPD) deixam uma pessoa pedir que seus dados sejam apagados. Como o crypto-shredding torna as duas coisas verdade, o que escapa e os três jeitos como os event stores o abordam.
+description: Event sourcing guarda cada fato para sempre; a GDPR deixa uma pessoa pedir que seus dados sejam apagados. Como o crypto-shredding torna as duas coisas verdade, o que escapa e os três jeitos como os event stores o abordam.
 tryIt:
   label: Esqueça um comprador na demo
 ---
@@ -9,8 +9,8 @@ Cedo ou tarde chega um e-mail: *por favor, apaguem todos os dados que vocês tê
 seu sistema guarda o estado em tabelas, é uma tarde de comandos `DELETE` e uma conferida nos
 backups. Se ele usa event sourcing, é uma crise de identidade. A graça do event store é que nada
 do que entra nele é alterado ou removido. É isso que torna uma reconstrução fiel, uma trilha de
-auditoria completa e um bug reproduzível. E agora a lei, o artigo 17 da GDPR (no Brasil, o artigo 18 da
-LGPD prevê o mesmo direito), afirma que a parte de uma pessoa precisa sumir.
+auditoria completa e um bug reproduzível. E agora a lei, o artigo 17 da GDPR, afirma que a parte
+de uma pessoa precisa sumir.
 
 As equipes costumam recorrer a uma de duas respostas, e as duas estão erradas. A primeira é
 reescrever a história: encontrar os eventos da pessoa e editá-los no lugar. Isso quebra todas as
@@ -25,13 +25,13 @@ Existe uma terceira resposta, e ela começa por uma pergunta que a maioria pula.
 Um evento registra uma decisão. `OrderPlaced` é o fato de que o cliente `c-42` pediu dois itens.
 O nome, o endereço e o telefone dele não fazem parte desse fato: são detalhes de que a
 transportadora precisa e que a nota fiscal imprime. Um command handler que os copia para o evento
-porque «estavam no comando» fez do evento o dono de dados que pertencem a outra parte do sistema.
+porque “estavam no comando” fez do evento o dono de dados que pertencem a outra parte do sistema.
 
 Então a primeira ferramenta não é criptografia, é uma fronteira. O evento leva o id, os detalhes
 ficam atrás de uma porta cuja implementação sabe apagá-los, e apagar a pessoa é um `DELETE` nesse
 armazenamento. Mathias Verraes chama isso de
 [forgettable payloads](https://verraes.net/2019/05/eventsourcing-patterns-forgettable-payloads).
-Basta sempre que o dado não é necessário para explicar o passado, e ainda o mantém fora de todas
+Basta sempre que o dado não for necessário para explicar o passado, e ainda o mantém fora de todas
 as cópias do log.
 
 Mas às vezes o dado *é* a decisão. `AddressChanged` registra o endereço para onde alguém se mudou.
@@ -55,8 +55,8 @@ Este é o stream de um cliente, antes e depois:
 | `001 204` | `PersonalDataForgotten` | | |
 
 Nada acima da última linha foi editado. As posições são as mesmas, os tipos de evento são os
-mesmos, o pedido continua sendo dobrado e os read models continuam sendo reconstruídos. Só a chave
-sumiu.
+mesmos, o fold do pedido continua funcionando e os read models continuam sendo reconstruídos. Só
+a chave sumiu.
 
 No [Bounda](https://docs.bounda.dev/getting-started/), marcar um campo é uma palavra no schema do
 evento:
@@ -81,7 +81,7 @@ seja um fold, uma projeção ou uma policy, recebe `string | null`.
 Esse `null` não é questão de estilo. É o que faz o compilador levar você a cada lugar que supunha
 que o e-mail sempre estaria lá: a projeção que o copiava para uma coluna `NOT NULL`, o fold que o
 passava para minúsculas, a policy que envia o e-mail de boas-vindas. Os eventos de uma pessoa
-esquecida continuam sendo dobrados, projetados e reproduzidos. Eles carregam um buraco onde o dado
+esquecida continuam passando pelo fold, pela projeção e pelo replay. Eles carregam um buraco onde o dado
 estava, e o seu código é obrigado a ter decidido o que esse buraco significa antes de chegar o
 primeiro pedido de exclusão, não depois.
 
@@ -95,7 +95,7 @@ Apagar a chave torna os eventos ilegíveis. Não faz nada com tudo o que foi con
 deles, e num sistema com event sourcing muita coisa é construída a partir deles:
 
 - **Read models.** O diretório de clientes projetou o e-mail numa linha.
-- **Snapshots.** O estado dobrado do agregado, guardado em claro para que um stream longo carregue
+- **Snapshots.** O estado do agregado após o fold, guardado sem criptografia para que um stream longo carregue
   rápido.
 - **Respostas lembradas.** Um comando enviado com uma chave de idempotência guarda o que respondeu,
   e a mensagem de uma rejeição pode citar o estado em que se baseou.
@@ -157,8 +157,7 @@ dados.
 
 - **Os backups guardam as chaves.** As chaves ficam ao lado dos eventos, então um backup do banco
   é uma cópia dos dados enquanto for mantido.
-- **Os logs guardam o que você imprimiu.** Se um handler registrou um payload, o log o tem em
-  claro.
+- **Os logs guardam o que você imprimiu.** Se um handler registrou um payload, o log o tem em texto puro.
 - **O que saiu do sistema continua lá fora,** a menos que uma policy vá apagá-lo.
 - **Campos não marcados são texto puro.** A marca é por campo e por evento: esqueça de marcar um e
   ele fica legível para sempre.

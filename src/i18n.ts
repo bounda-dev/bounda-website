@@ -26,6 +26,10 @@ export interface Language {
   readonly languages: string;
   readonly translated: string;
   readonly original: string;
+  /** Only for machine translations, which a native reader is asked to correct. */
+  readonly report: string;
+  /** Under the original, before the translations it has. Only English uses it. */
+  readonly alsoIn: string;
   readonly newsletter: Newsletter;
 }
 
@@ -55,6 +59,8 @@ export const LANGUAGES: Record<Locale, Language> = {
     languages: "Read in",
     translated: "",
     original: "",
+    report: "",
+    alsoIn: "Also in",
     newsletter: {
       heading: "Newsletter",
       lead: "Each new post by email. Nothing else.",
@@ -79,6 +85,8 @@ export const LANGUAGES: Record<Locale, Language> = {
     languages: "Leer en",
     translated: "Traducido del original en inglés.",
     original: "Leer el original",
+    report: "",
+    alsoIn: "",
     newsletter: {
       heading: "Newsletter",
       lead: "Cada post nuevo por email. Nada más.",
@@ -101,8 +109,10 @@ export const LANGUAGES: Record<Locale, Language> = {
     more: "ほかの記事",
     seeItRun: "ライブデモで動きを見る",
     languages: "言語",
-    translated: "英語の原文からの翻訳です。",
+    translated: "英語の原文からの機械翻訳です。",
     original: "原文を読む",
+    report: "誤りを報告する",
+    alsoIn: "",
     newsletter: {
       heading: "ニュースレター",
       lead: "新しい記事をメールで。それ以外は送りません。",
@@ -125,8 +135,10 @@ export const LANGUAGES: Record<Locale, Language> = {
     more: "Mais posts",
     seeItRun: "Veja funcionando na demo",
     languages: "Ler em",
-    translated: "Traduzido do original em inglês.",
+    translated: "Tradução automática do original em inglês.",
     original: "Ler o original",
+    report: "Avisar de um erro",
+    alsoIn: "",
     newsletter: {
       heading: "Newsletter",
       lead: "Cada post novo por email. Nada mais.",

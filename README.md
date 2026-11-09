@@ -39,9 +39,16 @@ published. The blog also feeds `/blog/rss.xml` and `/llms.txt`.
 Each post is translated into Spanish, Japanese and Brazilian Portuguese when it is published:
 `src/content/translations/<locale>/<slug>.md` holds the title, the description and the body in
 that language, and takes the date, the kind and the draft flag from the English post, which is
-the original. It is served at `/<locale>/blog/<slug>/`, with its own card, `hreflang` links to
-every version and a note linking the original. The interface strings and the languages live in
+the original. It is served at `/<locale>/blog/<slug>/`, with its own card and `hreflang` links to
+every version, `x-default` being the original (set in `src/layouts/base.astro`). The interface strings and the languages live in
 `src/i18n.ts`. A translation whose original does not exist fails the build.
+
+No page redirects by language: search engines pick the version through `hreflang`, and each link
+that is shared points at its language. The original lists its translations in one line under the
+post; a translation says where it comes from above it. Spanish is reviewed by the author and says
+*translated*; Japanese and Portuguese are machine translations, say so, and link to a new issue to
+report a mistake. [`GLOSSARY.md`](src/content/translations/GLOSSARY.md) fixes how each language
+renders Bounda's vocabulary, and how a machine translation is checked before it is published.
 
 ## Keeping the two sites coherent
 
