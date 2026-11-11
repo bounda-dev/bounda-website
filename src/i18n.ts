@@ -24,6 +24,8 @@ export interface Language {
   readonly more: string;
   readonly seeItRun: string;
   readonly languages: string;
+  /** The heading of the post's table of contents. */
+  readonly contents: string;
   readonly translated: string;
   readonly original: string;
   /** Only for machine translations, which a native reader is asked to correct. */
@@ -57,6 +59,7 @@ export const LANGUAGES: Record<Locale, Language> = {
     more: "More posts",
     seeItRun: "See it run in the live demo",
     languages: "Read in",
+    contents: "On this page",
     translated: "",
     original: "",
     report: "",
@@ -83,6 +86,7 @@ export const LANGUAGES: Record<Locale, Language> = {
     more: "Más posts",
     seeItRun: "Míralo funcionar en la demo",
     languages: "Leer en",
+    contents: "En esta página",
     translated: "Traducido del original en inglés.",
     original: "Leer el original",
     report: "",
@@ -109,6 +113,7 @@ export const LANGUAGES: Record<Locale, Language> = {
     more: "ほかの記事",
     seeItRun: "ライブデモで動きを見る",
     languages: "言語",
+    contents: "このページの内容",
     translated: "英語の原文からの機械翻訳です。",
     original: "原文を読む",
     report: "誤りを報告する",
@@ -135,6 +140,7 @@ export const LANGUAGES: Record<Locale, Language> = {
     more: "Mais posts",
     seeItRun: "Veja funcionando na demo",
     languages: "Ler em",
+    contents: "Nesta página",
     translated: "Tradução automática do original em inglês.",
     original: "Ler o original",
     report: "Avisar de um erro",
