@@ -16,7 +16,20 @@ interface Props {
 const { article } = Astro.props;
 const { locale, slug, title, description, date, updated, kind, tryIt, draft, locales } = article;
 const text = LANGUAGES[locale];
-const { Content } = await render(article.entry);
+const { Content, headings } = await render(article.entry);
+// The post's sections and their subsections, for the table of contents beside it. Astro gives each
+// heading's text plain, so the Markdown headings, in the same order, put its code spans back.
+const escape = (value: string) => value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const source = (article.entry.body ?? "")
+  .replace(/^```[\s\S]*?^```/gm, "")
+  .split("\n")
+  .flatMap((line) => /^#{1,6} /.test(line) ? [line.replace(/^#+ /, "").trim()] : []);
+const contents = headings.flatMap((heading, index) => {
+  if (heading.depth !== 2 && heading.depth !== 3) return [];
+  const raw = source[index] ?? heading.text;
+  const html = escape(raw).replace(/`([^`]+)`/g, "<code>$1</code>");
+  return [{ ...heading, html: raw.replace(/`/g, "") === heading.text ? html : escape(heading.text) }];
+});
 const minutes = readingMinutes(article);
 const others = (await articles(locale)).filter((other) => other.slug !== slug).slice(0, 3);
 
@@ -61,6 +74,22 @@ const structuredData = {
   <main id="main-content" class="post">
     <div class="progress" aria-hidden="true"></div>
     <article class="wrap column">
+      {
+        contents.length > 1 && (
+          <aside class="toc">
+            <nav aria-labelledby="toc-label">
+              <p class="label" id="toc-label">{text.contents}</p>
+              <ol>
+                {contents.map((heading) => (
+                  <li class={`depth-${heading.depth}`}>
+                    <a href={`#${heading.slug}`} set:html={heading.html} />
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          </aside>
+        )
+      }
       <header class="head">
         <p class="label crumbs">
           <a href={blogPath(locale)}>{text.blog}</a><span aria-hidden="true">/</span>{text.kinds[kind]}
@@ -141,6 +170,31 @@ const structuredData = {
   <Footer />
 </BaseLayout>
 
+<script>
+  // Where the browser cannot mark the section being read itself (scroll-target-group), this does:
+  // the last heading above a line a third of the way down the view. An observer, not a scroll
+  // listener: its area is everything above that line, so it calls back only when a heading crosses
+  // it, in either direction and however far the page jumped. Without it the links still work.
+  if (!CSS.supports("scroll-target-group: auto")) {
+    const links = [...document.querySelectorAll<HTMLAnchorElement>(".toc a")];
+    const headings = links.map((link) => document.getElementById(decodeURIComponent(link.hash.slice(1))));
+    let current = -1;
+    const mark = () => {
+      const line = window.innerHeight / 3;
+      let index = -1;
+      headings.forEach((heading, i) => {
+        if (heading && heading.getBoundingClientRect().top <= line) index = i;
+      });
+      if (index === current) return;
+      links[current]?.removeAttribute("aria-current");
+      current = index;
+      links[current]?.setAttribute("aria-current", "location");
+    };
+    const observer = new IntersectionObserver(mark, { rootMargin: "100000px 0px -66% 0px" });
+    for (const heading of headings) if (heading) observer.observe(heading);
+  }
+</script>
+
 <style>
   .post {
     padding: clamp(112px, 16vh, 160px) 0 0;
@@ -197,6 +251,89 @@ const structuredData = {
     position: relative;
     min-width: 0;
     padding-bottom: 56px;
+  }
+
+  /*
+   * The table of contents sits left of the reading column, level with the top of the post, where a
+   * wide screen has room for it, and stays in view while the post scrolls. Narrower screens leave
+   * it out rather than push the text down. The browser marks the section being read itself, with
+   * scroll-target-group and :target-current; the script below does it only where that is missing.
+   */
+  .toc {
+    display: none;
+  }
+
+  @media (min-width: 1280px) {
+    .toc {
+      display: block;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: calc(100% - var(--gutter) + 40px);
+      width: 224px;
+    }
+
+    .toc nav {
+      position: sticky;
+      top: 40px;
+      max-height: calc(100vh - 80px);
+      overflow-y: auto;
+    }
+  }
+
+  .toc .label {
+    margin: 0 0 14px;
+    color: var(--muted);
+  }
+
+  .toc ol {
+    scroll-target-group: auto;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-left: 1px solid var(--rule);
+  }
+
+  .toc li {
+    margin: 0;
+  }
+
+  .toc a {
+    display: block;
+    margin-left: -1px;
+    padding: 5px 0 5px 14px;
+    border-left: 2px solid transparent;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.15s var(--ease);
+  }
+
+  .toc a :global(code) {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+  }
+
+  .toc .depth-3 a {
+    padding-left: 26px;
+    font-size: 0.78125rem;
+  }
+
+  .toc a:hover {
+    color: var(--text);
+  }
+
+  /* :is() forgives what a browser does not know, so the fallback's mark still shows without :target-current. */
+  .toc a:is(:target-current, [aria-current="location"]) {
+    color: var(--text);
+    border-left-color: var(--accent);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html) {
+      scroll-behavior: smooth;
+    }
   }
 
   /* One centred column for reading, the post and what comes after it alike. */
