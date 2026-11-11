@@ -1,13 +1,15 @@
 ---
-title: Cloudflare Durable Objects でイベントソーシングのバックエンドを作る
-description: 空のフォルダから、Cloudflare にデプロイされたイベントソーシングの API まで、Bounda で一気に。テナントごとの Durable Object、そのアラームで動くポリシー、workerd でのテスト、そしてコマンド一回あたりのコスト。
+title: "Cloudflare Durable Objects でイベントソーシング: タイマー付き、キューなしでデプロイするバックエンド"
+description: データベースもキューも cron も運用せずにイベントソーシング。テナントごとの Durable Object、そのアラームで動くタイマー、workerd でのテスト、三十分でのデプロイ、そしてコマンド一回あたりのコストを行単位で。
 tryIt:
   label: デモで仮押さえを期限切れにする
 ---
 
-このチュートリアルでは、イベントソーシングで小さな注文 API を作り、Cloudflare にデプロイします。使うのは TypeScript 向けのイベントソーシングと CQRS のフレームワーク [Bounda](https://docs.bounda.dev/getting-started/) と、その Cloudflare アダプターです。アダプターはアプリのテナントごとに専用の [Durable Object](https://developers.cloudflare.com/durable-objects/) を動かし、イベントストアも read model もバックグラウンドの処理も、すべてそのオブジェクトの SQLite に収めます。用意するデータベースも、動かし続けるキューや cron もありません。
+イベントソーシングを使いたい。すべての変更を事実として残し、そこから作り直せる read model を持ち、わざわざ作らなくても監査証跡が手に入る。けれど多くのスタックでは、データベース、キュー、それを処理するワーカー、そして cron を運用することになります。さらにルールが「あとで」と言った途端、つまり誰も支払わなかった注文を期限切れにする、明日顧客にリマインドする、といった処理が出てきた途端、デプロイして見張るべき部品がまた一つ増えます。
 
-最後には、注文を作り、支払い、支払われなかった注文をタイマーで期限切れにし、それをすべて workerd の中でテストし、コマンド一つでデプロイしているはずです。所要時間は三十分ほど。必要なのは Node.js 22.18 以降と、最後のステップ用の Cloudflare アカウントです。無料プランで足ります。
+Cloudflare なら、すべてが一か所に収まります。[Durable Object](https://developers.cloudflare.com/durable-objects/) は専用の SQLite とアラームを持つシングルスレッドのアクターで、それはまさにイベントストアに必要なものです。書き手が一人であること、トランザクションのある保存先、そしてあとで目を覚ます手段。TypeScript 向けのイベントソーシングと CQRS のフレームワーク [Bounda](https://docs.bounda.dev/getting-started/) は、アプリのテナントごとにその一つを使い、イベント、read model、予約された処理、イベントに反応するポリシーをすべてそこで動かします。ほかにデプロイするものはありません。
+
+このチュートリアルでは、空のフォルダから三十分ほどでデプロイ済みの API まで進みます。支払える注文、そして三十分以内に誰も支払わなければ自然に期限切れになる注文を、タイマーは一行で、テストは workerd の中で動かして作ります。その途中で、コマンド一回のコストを行単位で見ていきます。テンプレートのコマンドで書き込みは 8 行、無料プランならおよそ一日 12,500 コマンドです。必要なのは Node.js 22.18 以降と、最後のステップ用の Cloudflare アカウントです。
 
 ## 1. プロジェクトを作る
 
@@ -35,46 +37,9 @@ tests/orders.test.ts                          the domain, on an in-memory store
 tests/api.test.ts                             the API, against the Durable Object
 ```
 
-コマンドは判断します。イベントか型付きのリジェクションを返し、データベースには一切触れません。
+`app/` の下のファイルはただの関数です。コマンドはイベントか型付きのリジェクションを返してデータベースには触れず、イベントはペイロードが何かと状態をどう変えるかを述べ、プロジェクションは read model の行を書き込みます。ステップ 4 でそれぞれ一つずつ書くので、いま読む必要はありません。`+types` の import は `bounda generate` が生成し、どのスクリプトも最初にこれを実行するので、配線を一行も書かずにすべてがこれらのファイルから型付けされます。
 
-```ts
-// app/domain/order/commands/place-order.ts
-import type { Command } from "./+types/place-order";
-
-export const payload = ({ z }: Command.PayloadArgs) =>
-  z.object({ orderId: z.uuid(), customerId: z.string().min(1), total: z.number().positive() });
-
-export const rejections = ({ command }: Command.RejectionsArgs) => ({
-  AlreadyPlaced: `Order ${command.aggregateId} was already placed`,
-});
-
-export const handler = ({ command, state, events, reject }: Command.HandlerArgs) => {
-  if (state.status !== undefined) return reject("AlreadyPlaced");
-  return [
-    events.orderPlaced({ customerId: command.payload.customerId, total: command.payload.total }),
-  ];
-};
-```
-
-イベントは、ペイロードが何か、そして注文の状態をどう変えるかを述べます。
-
-```ts
-// app/domain/order/order-placed.ts
-import type { Event } from "./+types/order-placed";
-
-export const payload = ({ z }: Event.PayloadArgs) =>
-  z.object({ customerId: z.string(), total: z.number().positive() });
-
-export const begin = ({ event }: Event.BeginArgs) => ({
-  status: "placed" as const,
-  customerId: event.payload.customerId,
-  total: event.payload.total,
-});
-```
-
-`+types` の import は `bounda generate` が生成し、どのスクリプトも最初にこれを実行します。そのため状態もイベントもコマンドも、配線を一行も書かずにこれらのファイルから型付けされます。
-
-Cloudflare 固有の部分は `src/worker.ts` の二つの export です。
+Cloudflare で動かしているのは `src/worker.ts` の二つの export です。
 
 ```ts
 // src/worker.ts

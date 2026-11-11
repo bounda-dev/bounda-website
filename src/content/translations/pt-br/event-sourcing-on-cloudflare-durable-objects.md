@@ -1,21 +1,30 @@
 ---
-title: Um backend com event sourcing em Durable Objects da Cloudflare
-description: De uma pasta vazia a uma API com event sourcing publicada na Cloudflare, de uma vez só, com Bounda. Um Durable Object por tenant, uma policy no seu alarme, testes no workerd e quanto custa cada comando.
+title: "Event sourcing em Durable Objects da Cloudflare: um backend publicado, com timers e sem filas"
+description: Event sourcing sem banco de dados, fila ou cron para manter. Um Durable Object por tenant, timers no seu alarme, testes no workerd, deploy em meia hora, e quanto custa cada comando, linha por linha.
 tryIt:
   label: Deixe uma reserva expirar na demo
 ---
 
-Este tutorial constrói uma pequena API de pedidos com event sourcing e faz o deploy dela na
-Cloudflare. Ele usa o [Bounda](https://docs.bounda.dev/getting-started/), um framework de event
-sourcing e CQRS para TypeScript, e o seu adaptador para a Cloudflare, que roda cada tenant do seu
-app no próprio [Durable Object](https://developers.cloudflare.com/durable-objects/): o event store,
-os read models e o trabalho em segundo plano, tudo no SQLite do objeto. Não há banco de dados para
-provisionar nem fila ou cron para manter.
+Você quer event sourcing: cada mudança guardada como um fato, read models que dá para reconstruir a
+partir deles, uma trilha de auditoria que você não precisou construir. Na maioria das stacks isso
+significa manter um banco de dados, uma fila, um worker que a esvazia e um cron. E assim que uma
+regra diz *mais tarde*, expirar o pedido que ninguém pagou ou lembrar o cliente amanhã, ela vira
+mais uma peça para publicar e vigiar.
 
-No fim você terá criado pedidos, pago esses pedidos, deixado um não pago expirar com um timer,
-testado tudo dentro do workerd e feito o deploy com um comando. Leva cerca de meia hora. Você
-precisa do Node.js 22.18 ou mais recente e, para o último passo, de uma conta na Cloudflare; o
-plano gratuito basta.
+Na Cloudflare tudo cabe num lugar só. Um
+[Durable Object](https://developers.cloudflare.com/durable-objects/) é um ator de uma única thread
+com o próprio SQLite e um alarme, que é exatamente o que um event store precisa: um único escritor,
+um armazenamento transacional e um jeito de acordar mais tarde.
+O [Bounda](https://docs.bounda.dev/getting-started/), um framework de event sourcing e CQRS para
+TypeScript, roda cada tenant do seu app em um deles: os seus eventos, os seus read models, o seu
+trabalho agendado e as policies que reagem aos seus eventos. Nada mais para publicar.
+
+Este tutorial vai de uma pasta vazia a uma API publicada em cerca de meia hora: pedidos que podem
+ser pagos e que expiram sozinhos quando ninguém paga em 30 minutos, com uma linha para o timer e
+testes que rodam dentro do workerd. No caminho você vai ver quanto custa cada comando, contado
+linha por linha: 8 linhas escritas para o comando do template, ou cerca de 12.500 comandos por dia
+no plano gratuito. Você precisa do Node.js 22.18 ou mais recente e, para o último passo, de uma
+conta na Cloudflare.
 
 ## 1. Crie o projeto
 
@@ -48,47 +57,13 @@ tests/orders.test.ts                          the domain, on an in-memory store
 tests/api.test.ts                             the API, against the Durable Object
 ```
 
-O comando decide: devolve eventos ou uma rejeição tipada, e nunca toca no banco de dados:
+Os arquivos em `app/` são funções comuns. Um comando devolve eventos ou uma rejeição tipada e
+nunca toca no banco de dados, um evento diz qual é o seu payload e como muda o estado, e uma
+projeção escreve a linha do read model. Você vai escrever um de cada no passo 4, então não precisa
+lê-los agora. Os imports de `+types` são gerados pelo `bounda generate`, que todo script roda
+primeiro, então tudo fica tipado a partir desses arquivos sem uma linha de fiação.
 
-```ts
-// app/domain/order/commands/place-order.ts
-import type { Command } from "./+types/place-order";
-
-export const payload = ({ z }: Command.PayloadArgs) =>
-  z.object({ orderId: z.uuid(), customerId: z.string().min(1), total: z.number().positive() });
-
-export const rejections = ({ command }: Command.RejectionsArgs) => ({
-  AlreadyPlaced: `Order ${command.aggregateId} was already placed`,
-});
-
-export const handler = ({ command, state, events, reject }: Command.HandlerArgs) => {
-  if (state.status !== undefined) return reject("AlreadyPlaced");
-  return [
-    events.orderPlaced({ customerId: command.payload.customerId, total: command.payload.total }),
-  ];
-};
-```
-
-O evento diz qual é o seu payload e como muda o estado do pedido:
-
-```ts
-// app/domain/order/order-placed.ts
-import type { Event } from "./+types/order-placed";
-
-export const payload = ({ z }: Event.PayloadArgs) =>
-  z.object({ customerId: z.string(), total: z.number().positive() });
-
-export const begin = ({ event }: Event.BeginArgs) => ({
-  status: "placed" as const,
-  customerId: event.payload.customerId,
-  total: event.payload.total,
-});
-```
-
-Os imports de `+types` são gerados pelo `bounda generate`, que todo script roda primeiro, então o
-estado, os eventos e os comandos ficam tipados a partir desses arquivos sem uma linha de fiação.
-
-A parte da Cloudflare são dois exports em `src/worker.ts`:
+O que faz o app rodar na Cloudflare são dois exports em `src/worker.ts`:
 
 ```ts
 // src/worker.ts
