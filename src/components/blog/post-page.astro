@@ -74,22 +74,6 @@ const structuredData = {
   <main id="main-content" class="post">
     <div class="progress" aria-hidden="true"></div>
     <article class="wrap column">
-      {
-        contents.length > 1 && (
-          <aside class="toc">
-            <nav aria-labelledby="toc-label">
-              <p class="label" id="toc-label">{text.contents}</p>
-              <ol>
-                {contents.map((heading) => (
-                  <li class={`depth-${heading.depth}`}>
-                    <a href={`#${heading.slug}`} set:html={heading.html} />
-                  </li>
-                ))}
-              </ol>
-            </nav>
-          </aside>
-        )
-      }
       <header class="head">
         <p class="label crumbs">
           <a href={blogPath(locale)}>{text.blog}</a><span aria-hidden="true">/</span>{text.kinds[kind]}
@@ -124,6 +108,24 @@ const structuredData = {
       <div class="prose">
         <Content />
       </div>
+      {/* After the text in the document, so a reader, a screen reader or a reading mode meets the
+          post first; the styles still show it left of the column, level with the top. */}
+      {
+        contents.length > 1 && (
+          <aside class="toc">
+            <nav aria-labelledby="toc-label">
+              <p class="label" id="toc-label">{text.contents}</p>
+              <ol>
+                {contents.map((heading) => (
+                  <li class={`depth-${heading.depth}`}>
+                    <a href={`#${heading.slug}`} set:html={heading.html} />
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          </aside>
+        )
+      }
       {
         locale === "en" && locales.length > 1 && (
           <p class="also-in">
