@@ -1,0 +1,30 @@
+name: Newsletter
+
+# Sends each new post of the blog's feed to the newsletter, once (scripts/newsletter.mjs).
+# Does nothing while src/newsletter.json says "enabled": false.
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: newsletter
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  send:
+    name: Send new posts
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24.22.2
+      - run: node scripts/newsletter.mjs
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}

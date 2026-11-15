@@ -169,7 +169,7 @@ datos.
 
 ## Míralo en marcha
 
-La [demo](https://demo.bounda.dev) es la taquilla de un teatro que funciona con Bounda, con un
+La [demo](https://demo.bounda.dev/?scene=forget) es la taquilla de un teatro que funciona con Bounda, con un
 Durable Object por visitante. Compra una entrada y abre la escena **Forget me**. Tu email desaparece
 de todos los eventos de la cinta, por antiguos que sean, y del libro de ventas; tus reservas salen
 de los read models; el recordatorio que tenías programado se cancela. El stream conserva todas sus

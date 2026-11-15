@@ -1,0 +1,111 @@
+---
+import type { GetStaticPaths } from "astro";
+import Footer from "../../components/footer.astro";
+import Nav from "../../components/nav.astro";
+import BaseLayout from "../../layouts/base.astro";
+
+// Where the newsletter's form and its confirmation link land (worker/index.ts). Plain pages, so the
+// whole flow works without JavaScript; kept out of search and the sitemap.
+
+// getStaticPaths runs on its own, so the states live inside it.
+export const getStaticPaths = (() =>
+  Object.entries({
+    check: { title: "Check your inbox", text: "A link to confirm is on its way. Until you use it, you are not on the list." },
+    confirm: { title: "One click to confirm", text: "Confirm, and each new post of the blog comes to this address." },
+    confirmed: { title: "You are subscribed", text: "Each new post of the blog will come by email. Every email has a link to leave." },
+    invalid: { title: "That address does not look right", text: "Go back and check it for a typo." },
+    expired: { title: "This link has expired", text: "Confirmation links last 48 hours. Subscribe again from any post and a new one comes." },
+    failed: { title: "Something went wrong", text: "Nothing was saved. Try again in a few minutes." },
+  }).map(([state, page]) => ({ params: { state }, props: page }))) satisfies GetStaticPaths;
+
+interface Props {
+  readonly title: string;
+  readonly text: string;
+}
+
+const { state } = Astro.params;
+const { title, text } = Astro.props;
+---
+
+<BaseLayout title={`${title} — Bounda`} description={text} noindex>
+  <Nav />
+  <main id="main-content" class="state">
+    <div class="wrap column">
+      <p class="label eyebrow">Newsletter</p>
+      <h1 class="display">{title}</h1>
+      <p class="text">{text}</p>
+      {
+        state === "confirm" ? (
+          <form action="/api/confirm" method="post">
+            <input type="hidden" name="t" value="" />
+            <button type="submit">Confirm</button>
+          </form>
+        ) : (
+          <a class="text-link" href="/blog/">
+            Back to the blog
+          </a>
+        )
+      }
+    </div>
+  </main>
+  <Footer />
+</BaseLayout>
+
+<style>
+  .state {
+    min-height: 70vh;
+    padding: clamp(112px, 16vh, 160px) 0 clamp(80px, 12vh, 128px);
+  }
+
+  .column {
+    max-width: calc(68ch + 2 * var(--gutter));
+  }
+
+  .eyebrow {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }
+
+  .eyebrow::before {
+    content: "";
+    width: 28px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  h1 {
+    margin: 20px 0 18px;
+    font-size: clamp(2rem, 1.3rem + 2.4vw, 3.2rem);
+    line-height: 1.04;
+    letter-spacing: -0.012em;
+  }
+
+  .text {
+    margin: 0 0 32px;
+    max-width: 52ch;
+    color: var(--muted);
+  }
+
+  /* The same box as the install command and the form. */
+  button {
+    appearance: none;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    padding: 14px 22px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-stretch: 125%;
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  button:hover,
+  button:focus-visible {
+    background: var(--raised);
+  }
+</style>

@@ -3,3 +3,5 @@ node_modules/
 .astro/
 .DS_Store
 lighthouse-reports/
+.dev.vars
+.wrangler/

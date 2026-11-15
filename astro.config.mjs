@@ -19,6 +19,8 @@ export default defineConfig({
   // A translated post links its other languages in the sitemap too (src/i18n.ts).
   integrations: [
     sitemap({
+      // The newsletter's confirmation pages are steps of a form, not pages to find.
+      filter: (page) => !page.includes("/newsletter/"),
       lastmod: new Date(),
       i18n: { defaultLocale: "en", locales: { en: "en", es: "es", ja: "ja", "pt-br": "pt-BR" } },
     }),

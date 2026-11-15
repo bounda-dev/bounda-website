@@ -1,0 +1,72 @@
+---
+import Footer from "../components/footer.astro";
+import Nav from "../components/nav.astro";
+import BaseLayout from "../layouts/base.astro";
+import newsletter from "../newsletter.json";
+import { CONTACT } from "../privacy";
+import "../styles/prose.css";
+
+// What GDPR art. 13 requires, and nothing more.
+---
+
+<BaseLayout title="Privacy — Bounda" description="How bounda.dev handles personal data.">
+  <Nav />
+  <main id="main-content" class="privacy">
+    <article class="wrap column">
+      <h1 class="display">Privacy</h1>
+      <div class="prose">
+        <h2>Controller</h2>
+        <p>Beñat Espiña, <a href={`mailto:${CONTACT}`}>{CONTACT}</a>.</p>
+
+        {
+          newsletter.enabled && (
+            <>
+              <h2>Newsletter</h2>
+              <ul>
+                <li>Your email address is used only to send you new posts, on the basis of your consent (GDPR art. 6(1)(a)).</li>
+                <li>You can withdraw it at any time with the link in every email. Giving your address is optional.</li>
+                <li>It is kept until you unsubscribe.</li>
+                <li>
+                  It is processed on our behalf by Resend (Plus Five Five, Inc.) in the United States, under the EU–U.S. Data
+                  Privacy Framework and the EU Standard Contractual Clauses.
+                </li>
+              </ul>
+            </>
+          )
+        }
+
+        <h2>This site</h2>
+        <p>
+          Cloudflare, Inc. serves the site and counts visits without cookies. To do so it processes your IP address, in the
+          United States under the EU–U.S. Data Privacy Framework, on the basis of our legitimate interest in running the
+          site (GDPR art. 6(1)(f)) and for as long as <a href="https://www.cloudflare.com/privacypolicy/">its privacy policy</a> sets.
+        </p>
+
+        <h2>Your rights</h2>
+        <p>
+          You can ask for access to, rectification or erasure of your data, restriction of or objection to its processing,
+          and its portability, by writing to <a href={`mailto:${CONTACT}`}>{CONTACT}</a>. You can also lodge a complaint
+          with a data protection authority.
+        </p>
+      </div>
+    </article>
+  </main>
+  <Footer />
+</BaseLayout>
+
+<style>
+  .privacy {
+    padding: clamp(112px, 16vh, 160px) 0 clamp(80px, 12vh, 128px);
+  }
+
+  .column {
+    max-width: calc(68ch + 2 * var(--gutter));
+  }
+
+  h1 {
+    margin: 0 0 40px;
+    font-size: clamp(2.1rem, 1.3rem + 2.8vw, 3.6rem);
+    line-height: 1.02;
+    letter-spacing: -0.012em;
+  }
+</style>
