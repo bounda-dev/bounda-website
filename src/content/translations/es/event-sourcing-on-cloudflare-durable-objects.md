@@ -185,7 +185,7 @@ export const handler = async ({ event, commands }: Policy.HandlerArgs) => {
 `commands` está tipado a partir de tus ficheros de comandos: un comando mal escrito o un payload
 equivocado no compila.
 
-Para ver el estado en `listOrders`, dale al read model una columna y proyecta los dos eventos
+Para ver el `status` en `listOrders`, dale al read model una columna y proyecta los dos eventos
 nuevos. Añade `status` a la vista:
 
 ```ts
@@ -225,12 +225,12 @@ export const project = async ({ event, table }: Projection.Args) => {
 Ejecuta `npm run typecheck`. Regenera los tipos y comprueba toda la app, incluido el `status` que
 escriben las proyecciones nuevas.
 
-Si creaste pedidos en el paso 3, o desplegaste con el botón, esas filas vuelven sin estado. Bounda
+Si creaste pedidos en el paso 3, o desplegaste con el botón, esas filas vuelven sin `status`. Bounda
 añade la columna nueva a la tabla cuando arranca el objeto, pero una fila solo recibe un valor
 cuando una proyección vuelve a tocarla. Un read model son datos derivados, así que la solución es
 proyectar otra vez todo el stream con el código nuevo: `rebuildReadModel("orders")` en el cliente
 que te da `connect` lo hace sin dejar el read model fuera de servicio
-([rebuilding a read model](https://docs.bounda.dev/guides/deployment/#rebuilding-a-read-model)).
+([rebuilding a read model](https://docs.bounda.dev/guides/deployment/#rebuilding-a-read-model), en inglés).
 Para el store local de `npm run dev`, basta con borrar `.wrangler/state`.
 
 ## 5. Pruébalo sin esperar media hora
@@ -320,7 +320,7 @@ propósito. Es un punto de partida, y cualquiera que conozca la dirección puede
 tenant con la cabecera. Una app con usuarios escribe su propio `fetch`, decide el tenant a partir
 de la sesión y llama al objeto con `connect(env.STORE.get(env.STORE.idFromName(tenant)))`, que da
 los mismos `commands` y `queries` tipados que los tests. La
-[guía de Cloudflare](https://docs.bounda.dev/adapters/cloudflare/) lo muestra.
+[guía de Cloudflare](https://docs.bounda.dev/adapters/cloudflare/) (en inglés) lo muestra.
 
 ## Cómo corre
 
@@ -340,7 +340,7 @@ Lo justo para razonar sobre lo que has desplegado:
   frena al comando, y un objeto sin nada pendiente no arma nada.
 - **Una policy se ejecuta al menos una vez, con un inbox.** Su intento confirma todo lo que decidió
   en una transacción o nada, y un evento que ya gestionó no se vuelve a gestionar. Los detalles
-  están en [delivery guarantees](https://docs.bounda.dev/concepts/delivery-guarantees/).
+  están en [delivery guarantees](https://docs.bounda.dev/concepts/delivery-guarantees/) (en inglés).
 
 ## Lo que cuesta
 
@@ -437,9 +437,9 @@ copiar los eventos a otro sitio, un pipeline que te toca construir a ti.
 ## Por dónde seguir
 
 La [demo](https://demo.bounda.dev) es la taquilla de un teatro construida igual, un Durable Object
-por visitante. Abre la escena **Let a hold run out**: un asiento reservado y sin pagar caduca solo,
+por visitante. Abre la escena **Let a hold run out** (deja que caduque una reserva): un asiento reservado y sin pagar caduca solo,
 allí con un plazo de un process en lugar de un comando programado. La
-[guía de Cloudflare](https://docs.bounda.dev/adapters/cloudflare/) cubre ports y bindings,
+[guía de Cloudflare](https://docs.bounda.dev/adapters/cloudflare/) (en inglés) cubre puertos y bindings,
 consistencia y tests, y
-[reacting to events](https://docs.bounda.dev/guides/reacting-to-events/) explica cuándo basta una
+[reacting to events](https://docs.bounda.dev/guides/reacting-to-events/) (en inglés) explica cuándo basta una
 policy y cuándo el trabajo necesita un process.

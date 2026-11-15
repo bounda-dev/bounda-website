@@ -16,8 +16,8 @@ Na Cloudflare tudo cabe num lugar só. Um
 com o próprio SQLite e um alarme, que é exatamente o que um event store precisa: um único escritor,
 um armazenamento transacional e um jeito de acordar mais tarde.
 O [Bounda](https://docs.bounda.dev/getting-started/), um framework de event sourcing e CQRS para
-TypeScript, roda cada tenant do seu app em um deles: os seus eventos, os seus read models, o seu
-trabalho agendado e as policies que reagem aos seus eventos. Nada mais para publicar.
+TypeScript, roda cada tenant do seu app em um deles: os eventos do tenant, os read models dele, o
+trabalho agendado dele e as policies que reagem aos eventos dele. Nada mais para publicar.
 
 Este tutorial vai de uma pasta vazia a uma API publicada em cerca de meia hora: pedidos que podem
 ser pagos e que expiram sozinhos quando ninguém paga em 30 minutos, com uma linha para o timer e
@@ -231,7 +231,7 @@ Bounda adiciona a coluna nova à tabela quando o objeto inicia, mas uma linha s�
 quando uma projeção a toca de novo. Um read model é dado derivado, então a solução é projetar o
 stream inteiro de novo com o código novo: `rebuildReadModel("orders")` no cliente que o `connect`
 dá faz isso sem tirar o read model do ar
-([rebuilding a read model](https://docs.bounda.dev/guides/deployment/#rebuilding-a-read-model)).
+([rebuilding a read model](https://docs.bounda.dev/guides/deployment/#rebuilding-a-read-model), em inglês).
 Para o store local do `npm run dev`, basta apagar `.wrangler/state`.
 
 ## 5. Teste sem esperar meia hora
@@ -321,15 +321,15 @@ propósito. É um ponto de partida, e qualquer um que saiba o endereço pode esc
 com o header. Um app com usuários escreve o próprio `fetch`, decide o tenant a partir da sessão e
 chama o objeto com `connect(env.STORE.get(env.STORE.idFromName(tenant)))`, que dá os mesmos
 `commands` e `queries` tipados dos testes. O
-[guia da Cloudflare](https://docs.bounda.dev/adapters/cloudflare/) mostra como.
+[guia da Cloudflare](https://docs.bounda.dev/adapters/cloudflare/) (em inglês) mostra como.
 
 ## Como roda
 
 Só o bastante para raciocinar sobre o que você publicou:
 
 - **Um Durable Object por tenant.** Cada tenant tem o próprio objeto, com o próprio SQLite, que
-  guarda os seus eventos, os seus read models, os seus comandos agendados e o inbox das suas
-  policies. Os tenants não compartilham nada. O SQL é o mesmo código que o Bounda roda sobre SQLite
+  guarda os eventos dele, os read models dele, os comandos agendados dele e o inbox das policies
+  dele. Os tenants não compartilham nada. O SQL é o mesmo código que o Bounda roda sobre SQLite
   em qualquer outro lugar.
 - **Um comando atualiza os read models antes de responder.** O objeto grava os eventos e os
   projeta na mesma requisição, então a query seguinte já vê a mudança: é por isso que o teste da
@@ -341,7 +341,7 @@ Só o bastante para raciocinar sobre o que você publicou:
   pendente não arma nada.
 - **Uma policy roda pelo menos uma vez, com um inbox.** A sua tentativa confirma tudo o que decidiu
   numa transação, ou nada, e um evento já tratado não é tratado de novo. Os detalhes estão em
-  [delivery guarantees](https://docs.bounda.dev/concepts/delivery-guarantees/).
+  [delivery guarantees](https://docs.bounda.dev/concepts/delivery-guarantees/) (em inglês).
 
 ## Quanto custa
 
@@ -437,9 +437,9 @@ pipeline que fica por sua conta.
 ## Para onde ir agora
 
 A [demo](https://demo.bounda.dev) é a bilheteria de um teatro construída do mesmo jeito, um
-Durable Object por visitante. Abra a cena **Let a hold run out**: um assento reservado e não pago
-expira sozinho, lá com um prazo de um process em vez de um comando agendado. O
-[guia da Cloudflare](https://docs.bounda.dev/adapters/cloudflare/) cobre ports e bindings,
+Durable Object por visitante. Abra a cena **Let a hold run out** (deixe uma reserva expirar): um assento reservado e não pago
+expira sozinho, feito lá com o prazo de um process em vez de um comando agendado. O
+[guia da Cloudflare](https://docs.bounda.dev/adapters/cloudflare/) (em inglês) cobre portas e bindings,
 consistência e testes, e
-[reacting to events](https://docs.bounda.dev/guides/reacting-to-events/) explica quando uma policy
+[reacting to events](https://docs.bounda.dev/guides/reacting-to-events/) (em inglês) explica quando uma policy
 basta e quando o trabalho precisa de um process.
