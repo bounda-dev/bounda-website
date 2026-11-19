@@ -1,12 +1,11 @@
 ---
 title: A command is a file
 description: A whole event-sourced feature in two small files, and the five things you no longer write to get there. Where the shape comes from, and what it costs.
-date: 2026-11-20
+date: 2026-11-19
 kind: essay
 tryIt:
   label: Hit the seat limit in the live demo
   href: https://demo.bounda.dev/?scene=limit
-draft: true
 ---
 
 Event sourcing has a reputation for ceremony. Before the first fact is stored you have written an
