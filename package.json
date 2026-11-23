@@ -27,6 +27,6 @@
     "lighthouse": "13.6.0",
     "satori": "0.35.1",
     "typescript": "5.9.3",
-    "wrangler": "4.165.0"
+    "wrangler": "4.166.0"
   }
 }
